@@ -1,0 +1,30 @@
+﻿@page "/"
+
+
+<PageTitle>Home</PageTitle>
+
+<div class="row">
+    <div class="col-12">
+        <h2 class="fw-bolder">Добро пожаловать в <span class="text-danger">Систему управления запасами участва ВЛ</span></h2>
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <AuthorizeView>
+                    <NotAuthorized>
+                        <span>Вы не вошли в систему. Пожалуйста 
+                            <a class="fw-bolder" href="/login">нажмите сюда</a>
+                            для входа в систему
+                        </span>
+                    </NotAuthorized>
+                    <Authorized>
+                        <span>Выполнен вход в систему <b>@context.User.Identity.Name</b>. Чтобы выйти из системы 
+                            <a class="fw-bolder" href="/logout">нажмите</a> 
+                            для выхода
+                        </span>
+                    </Authorized>
+                </AuthorizeView>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,29 @@
+﻿@using IMS.CoreBusiness.Entities
+@inject IViewUsersAccountByNameUseCase ViewUsersAccountByNameUseCase
+
+<div class="input-group mb-3">
+    <input type="text" 
+        class="form-control form-control-lg"
+        placeholder="Введите имя пользователя"
+        @bind-value="userNameToSearch"/>
+    <button type="button" 
+            class="input-group-text btn-primary" 
+            @onclick="@(async () => { await ViewUsers(); })">
+            Показать
+    </button>
+</div>
+
+@code {
+    private string? userNameToSearch;
+
+    [Parameter]
+    public EventCallback<List<UserAccount>> OnSearchUsers { get; set; }
+
+    private async Task ViewUsers()
+    {
+        var users = (await ViewUsersAccountByNameUseCase
+            .ExecuteAsync(userNameToSearch??string.Empty))?.ToList();
+
+        await OnSearchUsers.InvokeAsync(users);
+    }
+}

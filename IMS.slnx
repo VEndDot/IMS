@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="IMS.CoreBusiness/IMS.CoreBusiness.csproj" />
+  <Project Path="IMS.Plugins.EFCore/IMS.Plugins.EFCore.csproj" />
+  <Project Path="IMS.UseCases/IMS.UseCases.csproj" />
+  <Project Path="IMS.WebApp/IMS.WebApp.csproj" />
+</Solution>

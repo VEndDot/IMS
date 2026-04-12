@@ -1,0 +1,59 @@
+﻿@page "/users"
+@inject NavigationManager navigationManager
+@inject IViewUsersAccountByNameUseCase ViewUsersAccountByNameUseCase
+@rendermode InteractiveServer
+
+<h3>Список Пользователей</h3>
+<br />
+<ViewUserAccountComponent OnSearchUsers="OnSearchUsers"></ViewUserAccountComponent>
+<br />
+
+@if (this.usersList is not null)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Имя</th>
+                <th>Роль</th>
+                <th>Пароль</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in usersList)
+            {
+                <tr>
+                    <td>@user.Id</td>
+                    <td>@user.FirstName</td>
+                    <td>@user.Role</td>
+                    <td>@user.Password</td>
+                    <td><button type="button" class="btn btn-link">Изменить</button></td>
+                    <td><button type="button" class="btn btn-link">Удалить</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+<br />
+<button type="button" class="btn btn-primary" @onclick="AddUserAccount">Добавить нового пользователя</button>
+
+@code {
+    private List<UserAccount>? usersList;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // отображаем список пользователей сразу при загрузки страницы
+        var users = await ViewUsersAccountByNameUseCase.ExecuteAsync();
+        this.usersList = users.ToList();
+    }
+
+    private void OnSearchUsers(List<UserAccount> users)
+    {
+        this.usersList = users;
+    }
+
+    private void AddUserAccount()
+    {
+        navigationManager.NavigateTo("/adduser");
+    }
+}
