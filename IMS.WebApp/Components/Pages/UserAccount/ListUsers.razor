@@ -1,6 +1,7 @@
 ﻿@page "/users"
 @inject NavigationManager navigationManager
 @inject IViewUsersAccountByNameUseCase ViewUsersAccountByNameUseCase
+@inject IDeleteUserAccountUseCase DeleteUserAccountUseCase
 @rendermode InteractiveServer
 
 <h3>Список Пользователей</h3>
@@ -27,8 +28,8 @@
                     <td>@user.FirstName</td>
                     <td>@user.Role</td>
                     <td>@user.Password</td>
-                    <td><button type="button" class="btn btn-link">Изменить</button></td>
-                    <td><button type="button" class="btn btn-link">Удалить</button></td>
+                    <td><button type="button" class="btn btn-link" @onclick="@(() => OnClickEdit(user.Id))">Изменить</button></td>
+                    <td><button type="button" class="btn btn-link" @onclick="@(() => OnClickRemove(user.Id))">Удалить</button></td>
                 </tr>
             }
         </tbody>
@@ -55,5 +56,16 @@
     private void AddUserAccount()
     {
         navigationManager.NavigateTo("/adduser");
+    }
+
+    private void OnClickEdit(int userId)
+    {
+        navigationManager.NavigateTo($"/edituser/{userId}");
+    }
+
+    private async Task OnClickRemove(int userId)
+    {
+        await DeleteUserAccountUseCase.ExecuteAsync(userId);
+        this.usersList = (await ViewUsersAccountByNameUseCase.ExecuteAsync()).ToList();
     }
 }

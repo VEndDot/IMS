@@ -1,0 +1,92 @@
+﻿@page "/subcategory"
+@rendermode InteractiveServer
+@inject NavigationManager navigationManager
+@inject IViewSubcategoryUseCase ViewSubcategoryUseCase
+@inject IViewCategoryByNameUseCase ViewCategoryByNameUseCase
+<h3>Список подкатегорий</h3>
+
+@if (categories is not null)
+{
+    <div class="input-group mb-3">
+
+        <InputSelect class="form-select" @bind-Value="categoryName" @onclick="SearchSubcategoryByCategory">
+            <option value="все">Все</option>
+            @foreach (var category in categories)
+            {
+                <option value="@category.Name">@category.Name</option>
+            }
+        </InputSelect>
+        <input class="form-control" @bind-value="stringForSearch" placeholder="Введите подкатегорию"/>
+        <button class="btn btn-outline-info" type="button" @onclick="SearchSubcategoryByName">Поиск по названию</button>
+    </div>
+}
+
+@if (subcategories is not null)
+{
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Подкатегория</th>
+                <th>Категория</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var subcategory in this.subcategories)
+            {
+                <tr>
+                    <td>@subcategory.Id</td>
+                    <td>@subcategory.Name</td>
+                    <td>@subcategory.Category?.Name</td>
+                    <td><button class="btn btn-link">Изменить</button></td>
+                    <td><button class="btn btn-link">Удалить</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+<button type="button" class="btn btn-info" @onclick="AddSubcategory">Добавить подкатегорию</button>
+
+@code {
+
+    private List<Subcategory>? subcategories;
+    private List<Category>? categories;
+    private string? categoryName;
+    private string? stringForSearch;
+
+    protected async override Task OnInitializedAsync()
+    {
+        subcategories = (await ViewSubcategoryUseCase.ExecuteAsync()).ToList();
+        categories = (await ViewCategoryByNameUseCase.ExecuteAsync()).ToList();
+    }
+
+    private async Task SearchSubcategoryByCategory()
+    {
+        if (string.IsNullOrWhiteSpace(categoryName) || categoryName == "все")
+        {
+            subcategories = (await ViewSubcategoryUseCase.ExecuteAsync()).ToList();
+        }
+        else
+        {
+            subcategories = (await ViewSubcategoryUseCase.ExecuteAsync(categoryName)).ToList();
+        }
+    }
+
+    private async Task SearchSubcategoryByName()
+    {
+        if (!string.IsNullOrWhiteSpace(stringForSearch))
+        {
+            subcategories = (await ViewSubcategoryUseCase.ExecuteAsync(stringForSearch)).ToList();
+        }
+    }
+
+    private void AddSubcategory()
+    {
+        navigationManager.NavigateTo("/addsubcategory");
+    }
+}

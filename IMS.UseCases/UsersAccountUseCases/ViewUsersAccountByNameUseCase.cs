@@ -1,5 +1,5 @@
 ﻿using IMS.CoreBusiness.Entities;
-using IMS.UseCases.Interfaces;
+using IMS.UseCases.Interfaces.UserAccountInterfaces;
 using IMS.UseCases.PluginInterfaces;
 using System;
 using System.Collections.Generic;

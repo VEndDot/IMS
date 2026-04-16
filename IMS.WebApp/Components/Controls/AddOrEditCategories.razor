@@ -1,0 +1,18 @@
+﻿<EditForm Model="Category" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator></DataAnnotationsValidator>
+    <div class="form-group mb-3">
+        <label>Название категории</label>
+        <InputText @bind-Value="Category.Name" class="form-control" placeholder="Введите название категории"/>
+        <ValidationMessage For="@(() => Category.Name)"/>
+    </div>
+
+    <button type="submit" class="btn btn-success" >Добавить</button>
+    <button type="button" class="btn btn-light" @onclick="OnCancel">Отмена</button>
+</EditForm>
+
+
+@code {
+    [Parameter] public Category? Category { get; set; }
+    [Parameter] public EventCallback OnValidSubmit { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+}

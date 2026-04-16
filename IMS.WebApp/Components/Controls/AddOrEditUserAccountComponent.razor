@@ -1,0 +1,68 @@
+﻿<!-- UserAccountForm.razor -->
+<EditForm Model="UserAccount" OnValidSubmit="OnValidSubmit">
+    <DataAnnotationsValidator />
+
+    <div class="form-group mb-3">
+        <label>Имя пользователя</label>
+        <InputText @bind-Value="UserAccount.FirstName" class="form-control" />
+        <ValidationMessage For="@(() => UserAccount.FirstName)" />
+    </div>
+
+    <div class="form-group mb-3">
+        <label>Роль пользователя</label>
+        <InputSelect @bind-Value="UserAccount.Role" class="form-select">
+            <option value="user">user</option>
+            <option value="admin">admin</option>
+        </InputSelect>
+        <ValidationMessage For="@(() => UserAccount.Role)" />
+
+        @if (UserAccount.Role.Equals("admin"))
+        {
+            <div class="alert alert-warning mt-2" role="alert">
+                ⚠️ <strong>Внимание!</strong> Вы назначаете пользователю полные права администратора.
+                Убедитесь, что это доверенное лицо.
+            </div>
+        }
+    </div>
+
+    <div class="form-group mb-3">
+        <label>Пароль</label>
+        <InputText @bind-Value="UserAccount.Password" class="form-control" />
+        <ValidationMessage For="@(() => UserAccount.Password)" />
+    </div>
+
+    @if (UserAccount is not null)
+    {
+        <div class="card">
+            <h5 class="card-header">Предпросмотр:</h5>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Имя:</th>
+                        <th>Роль:</th>
+                        <th>Пароль:</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>@UserAccount.FirstName</td>
+                        <td>@UserAccount.Role</td>
+                        <td>@UserAccount.Password</td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+    }
+    <br/>
+    <button type="submit" class="btn btn-success">Сохранить</button>
+    <button type="button" class="btn btn-light" @onclick="OnCancel">Отмена</button>
+</EditForm>
+
+
+
+@code {
+    [Parameter] public UserAccount? UserAccount { get; set; } 
+    [Parameter] public EventCallback OnValidSubmit { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+}

@@ -7,5 +7,11 @@ namespace IMS.UseCases.PluginInterfaces
         Task<IEnumerable<UserAccount>> GetUsersAccountsByNameAsync(string name);
 
         Task AddUserAccountAsync(UserAccount userAccount);
+
+        Task<UserAccount?> GetUserAccountByIdAsync(int userId);
+
+        Task UpdateUserAccountAsync(UserAccount userAccount);
+
+        Task RemoveUserAccountAsync(int userId);
     }
 }

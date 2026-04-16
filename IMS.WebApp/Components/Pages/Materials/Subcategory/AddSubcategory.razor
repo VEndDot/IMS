@@ -1,0 +1,73 @@
+﻿@page "/addsubcategory"
+@rendermode InteractiveServer
+
+@inject NavigationManager navigationManager
+@inject IViewCategoryByNameUseCase ViewCategoryByNameUseCase
+@inject IViewCategoryByIdUseCase ViewCategoryByIdUseCase
+@inject IAddSubcategoryUseCase AddSubcategoryUseCase
+
+<h3>Список подкатегорий</h3>
+@if (this.subcategory is not null && this.categories is not null)
+{
+    <EditForm Model="subcategory" OnValidSubmit="OnValidSubmit">
+        <DataAnnotationsValidator></DataAnnotationsValidator>
+
+        <label>Выберите категорию</label>
+        <InputSelect class="form-select" @bind-Value="categoryId">
+            @foreach (var category in this.categories)
+            {
+                <option value="@category.Id">@category.Name</option>
+            }
+        </InputSelect>
+        <ValidationMessage For="@(() => subcategory.CategoryId)"></ValidationMessage>
+        <br />
+        <label>Введите название подкатегории</label>
+        <InputText class="form-control" @bind-Value="subcategory.Name" />
+        <ValidationMessage For="@(() => subcategory.Name)"/>
+        <br />
+        <button class="btn btn-primary" type="submit">Добавить</button>
+        <button class="btn btn-light" type="button" @onclick="OnClickCancel">Отмена</button>
+    </EditForm>
+
+}
+
+@code {
+    private List<Category>? categories;
+
+    private int categoryId;
+
+    private Subcategory? subcategory = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        categories = (await ViewCategoryByNameUseCase.ExecuteAsync()).ToList();
+
+        if (categories?.Any() == true)
+        {
+            categoryId = categories.First().Id;
+            if (subcategory is not null)
+            {
+                subcategory.CategoryId = categoryId;
+            }
+        }
+    }
+
+    private async Task OnValidSubmit()
+    {
+        var category = await ViewCategoryByIdUseCase.ExecuteAsync(this.categoryId);
+        if (category is null) return;
+
+        if (this.subcategory is not null)
+        {
+            this.subcategory.CategoryId = categoryId;
+            this.subcategory.Category = category;
+            await AddSubcategoryUseCase.ExecuteAsync(this.subcategory);
+            navigationManager.NavigateTo("/subcategory");
+        }
+    }
+
+    private void OnClickCancel()
+    {
+        navigationManager.NavigateTo("/subcategory");
+    }
+}

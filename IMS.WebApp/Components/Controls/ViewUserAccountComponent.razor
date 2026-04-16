@@ -11,19 +11,26 @@
             @onclick="@(async () => { await ViewUsers(); })">
             Показать
     </button>
+    <div class="input-group-text">
+        <InputCheckbox @bind-Value="showListUsers"></InputCheckbox>
+        <label class="ms-2 mb-0">Скрыть список</label>
+    </div>
+
 </div>
 
 @code {
     private string? userNameToSearch;
+    private bool showListUsers;
 
     [Parameter]
     public EventCallback<List<UserAccount>> OnSearchUsers { get; set; }
 
     private async Task ViewUsers()
     {
-        var users = (await ViewUsersAccountByNameUseCase
-            .ExecuteAsync(userNameToSearch??string.Empty))?.ToList();
 
-        await OnSearchUsers.InvokeAsync(users);
+        var users = (await ViewUsersAccountByNameUseCase
+                           .ExecuteAsync(userNameToSearch ?? string.Empty))?.ToList();
+
+        await OnSearchUsers.InvokeAsync(showListUsers ? null : users);
     }
 }

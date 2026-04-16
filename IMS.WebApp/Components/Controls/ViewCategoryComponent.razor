@@ -1,0 +1,27 @@
+﻿@inject IViewCategoryByNameUseCase ViewCategoryByNameUseCase
+<div class="input-group mb-3">
+    <input type="text"
+           class="form-control"
+           placeholder="Введите название категории"
+           @bind-value="categoryNameToSearch" />
+    <button class="btn btn-primary"
+            type="button"
+            @onclick="@(async () => { await ViewCategories(); })">
+        Показать
+    </button>
+</div>
+
+@code {
+    private string? categoryNameToSearch;
+
+    [Parameter]
+    public EventCallback<List<Category>> OnSearchCategory { get; set; }
+
+    private async Task ViewCategories()
+    {
+        var categories = (await ViewCategoryByNameUseCase
+                                .ExecuteAsync(categoryNameToSearch ?? string.Empty)).ToList();
+
+        await OnSearchCategory.InvokeAsync(categories);
+    }
+}

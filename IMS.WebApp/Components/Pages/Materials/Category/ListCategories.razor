@@ -1,0 +1,55 @@
+﻿@page "/category"
+@inject IViewCategoryByNameUseCase ViewCategoryByNameUseCase
+@inject NavigationManager navigationManager
+@rendermode InteractiveServer
+
+<h3>Список категорий</h3>
+
+<ViewCategoryComponent OnSearchCategory="OnSearchCategory"></ViewCategoryComponent>
+
+@if(this.listCategories is not null)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Название категории</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var category in listCategories)
+            {
+                <tr>
+                    <td>@category.Id</td>
+                    <td>@category.Name</td>
+                    <td><button class="btn btn-link">Изменить</button></td>
+                    <td><button class="btn btn-link">Удалить</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<button type="button" class="btn btn-success" @onclick="AddCategory">Создать категорию</button>
+
+@code {
+
+    private List<Category>? listCategories;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var category = await ViewCategoryByNameUseCase.ExecuteAsync();
+        this.listCategories = category.ToList();
+    }
+
+    private void OnSearchCategory(List<Category> categories)
+    {
+        this.listCategories = categories;      
+    }
+
+    private void AddCategory()
+    {
+        navigationManager.NavigateTo("/addcategory");
+    }
+}

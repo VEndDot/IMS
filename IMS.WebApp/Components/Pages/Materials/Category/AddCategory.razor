@@ -1,0 +1,43 @@
+﻿@page "/addcategory"
+@inject NavigationManager navigationManager
+@inject IAddCategoryUseCase AddCategoryUseCase
+@rendermode InteractiveServer
+<h3>Создать категорию</h3>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+<AddOrEditCategories 
+    Category="category"      
+    OnValidSubmit="OnAddCategory"
+    OnCancel="OnClickCancel" />
+
+@code {
+
+    private Category? category = new();
+
+    private string? errorMessage;
+
+    private async Task OnAddCategory()
+    {
+        if (this.category is null) return;
+
+        try
+        {
+            await AddCategoryUseCase.ExecuteAsync(this.category);
+            navigationManager.NavigateTo("/category");
+        }
+        catch(InvalidOperationException ex)
+        {
+            errorMessage = ex.Message;
+        }
+
+    }
+
+    private void OnClickCancel()
+    {
+        navigationManager.NavigateTo("/category");
+    }
+}

@@ -7,18 +7,18 @@ using System.Text;
 
 namespace IMS.UseCases.UsersAccountUseCases
 {
-    public class AddUserAccountUseCase : IAddUserAccountUseCase
+    public class ViewUserAccountByIdUseCase : IViewUserAccountByIdUseCase
     {
         private readonly IUserAccountRepository userAccountRepository;
 
-        public AddUserAccountUseCase(IUserAccountRepository userAccountRepository)
+        public ViewUserAccountByIdUseCase(IUserAccountRepository userAccountRepository)
         {
             this.userAccountRepository = userAccountRepository;
         }
 
-        public async Task ExecuteAsync(UserAccount usersAccount)
+        public async Task<UserAccount?> ExecuteAsync(int userId)
         {
-            await this.userAccountRepository.AddUserAccountAsync(usersAccount);
+            return await this.userAccountRepository.GetUserAccountByIdAsync(userId);
         }
     }
 }

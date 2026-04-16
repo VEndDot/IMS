@@ -1,0 +1,43 @@
+﻿@page "/edituser/{userId:int}"
+@rendermode InteractiveServer
+@inject NavigationManager navigationManager
+@inject IViewUserAccountByIdUseCase ViewUserAccountByIdUseCase
+@inject IEditUserAccountUseCase EditUserAccountUseCase
+@inject IJSRuntime JS
+
+<h3>Изменить данные пользователя</h3>
+
+@if (userAccount is not null)
+{
+    <AddOrEditUserAccountComponent UserAccount="userAccount"
+                                   OnValidSubmit="OnEditUserAccount"
+                                   OnCancel="OnClickCancel" />
+}
+
+@code {
+    [Parameter] 
+    public int UserId { get; set; }
+
+    private UserAccount? userAccount;
+
+    protected override async Task OnInitializedAsync()
+    {
+        userAccount = await ViewUserAccountByIdUseCase.ExecuteAsync(UserId);
+    }
+
+    private async Task OnEditUserAccount()
+    {
+        var confirmed = await JS.InvokeAsync<bool>("confirm",
+            $"Вы действительно хотите изменить пользователя {userAccount?.FirstName} с ролью {userAccount?.Role}");
+        if (userAccount is not null && confirmed)
+        {
+            await EditUserAccountUseCase.ExecuteAsync(this.userAccount);
+            navigationManager.NavigateTo("/users");
+        }
+    }
+
+    private void OnClickCancel()
+    {
+        navigationManager.NavigateTo("/users");
+    }
+}

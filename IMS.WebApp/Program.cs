@@ -1,10 +1,14 @@
 using IMS.Plugins.EFCore.Data;
-using IMS.UseCases.Interfaces;
+using IMS.UseCases.Interfaces.CategoryInterfaces;
+using IMS.UseCases.Interfaces.UserAccountInterfaces;
 using IMS.UseCases.PluginInterfaces;
 using IMS.UseCases.UsersAccountUseCases;
+using IMS.UseCases.CategoryUseCases;
 using IMS.WebApp.Components;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
+using IMS.UseCases.Interfaces.SubcategoryInterfaces;
+using IMS.UseCases.SubcategoryUseCases;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,10 +46,27 @@ builder.Services.AddDbContext<IMSDbContext>(options =>
 });
 
 // 6) Добавляем репозитории
+// User account repository
 builder.Services.AddTransient<IUserAccountRepository, UserAccountRepository>();
+// Category repository
+builder.Services.AddTransient<ICategoryRepository, CategoryRepository>();
+// Subcategory repository
+builder.Services.AddTransient<ISubcategoryRepository, SubcategoryRepository>();
+
 // 7) Добавляем сервисы
+// user account services
 builder.Services.AddTransient<IViewUsersAccountByNameUseCase, ViewUsersAccountByNameUseCase>();
 builder.Services.AddTransient<IAddUserAccountUseCase, AddUserAccountUseCase>();
+builder.Services.AddTransient<IViewUserAccountByIdUseCase, ViewUserAccountByIdUseCase>();
+builder.Services.AddTransient<IEditUserAccountUseCase, EditUserAccountUseCase>();
+builder.Services.AddTransient<IDeleteUserAccountUseCase, DeleteUserAccountUseCase>();
+// category services
+builder.Services.AddTransient<IViewCategoryByNameUseCase, ViewCategoryByNameUseCase>();
+builder.Services.AddTransient<IAddCategoryUseCase, AddCategoryUseCase>();
+builder.Services.AddTransient<IViewCategoryByIdUseCase, ViewCategoryByIdUseCase>();
+// subcategory services
+builder.Services.AddTransient<IAddSubcategoryUseCase, AddSubcategoryUseCase>();
+builder.Services.AddTransient<IViewSubcategoryUseCase, ViewSubcategoryUseCase>();
 
 var app = builder.Build();
 

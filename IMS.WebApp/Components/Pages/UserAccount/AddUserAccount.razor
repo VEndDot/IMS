@@ -1,0 +1,40 @@
+﻿@page "/adduser"
+@rendermode InteractiveServer
+@inject IAddUserAccountUseCase AddUserAccountUseCase
+@inject NavigationManager navigationManager
+@inject IJSRuntime JS
+<h3>Добавить нового пользователя в систему</h3>
+<br />
+
+@if (userAccount is not null)
+{
+    <AddOrEditUserAccountComponent UserAccount="userAccount"
+                                   OnValidSubmit="OnAddUserAccoun"
+                                   OnCancel="OnClickCancel" />
+}
+
+
+@code {
+    private UserAccount? userAccount = new() { Role = "user"}; 
+
+    private async Task OnAddUserAccoun()
+    {
+        // Вызывает подтвержедие для пользователя
+        var confirmed = await JS.InvokeAsync<bool>("confirm",
+            $"Вы действительно хотите создать пользователя {userAccount?.FirstName} c ролью {userAccount?.Role}");
+        if (confirmed)
+        {
+            if (this.userAccount is not null)
+            {
+                await AddUserAccountUseCase.ExecuteAsync(this.userAccount);
+                navigationManager.NavigateTo("/users");
+            }
+        }
+
+    }
+
+    private void OnClickCancel()
+    {
+        navigationManager.NavigateTo("/users");
+    }
+}
