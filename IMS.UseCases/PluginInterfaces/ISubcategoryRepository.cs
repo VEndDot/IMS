@@ -10,5 +10,9 @@ namespace IMS.UseCases.PluginInterfaces
         Task AddSubcategoryAcync(Subcategory subcategory);
 
         Task<IEnumerable<Subcategory>> GetSubcategoryByNameAsync(string name);
+
+        Task<Subcategory?> GetSubcategoryByIdAsync(int subcategoryId);
+
+        Task<IEnumerable<Subcategory>> GetSubcategoryByIdCategoryAsync(int categoryId);
     }
 }

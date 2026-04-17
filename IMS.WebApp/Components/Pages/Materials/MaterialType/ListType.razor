@@ -1,6 +1,54 @@
 ﻿@page "/type"
-<h3>Список типов</h3>
+@rendermode InteractiveServer
+@inject NavigationManager navigationManager
+@inject IViewMaterialTypeByNameUseCase ViewMaterialTypeByNameUseCase
 
+<h3>Список типов номенклатуры</h3>
+@if (materialTypes is not null)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Название типа</th>
+                <th>Описание</th>
+                <th>Id-Подкатегории</th>
+                <th>Подкатегория</th>
+                <th>Id-Категории</th>
+                <th>Категория</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var mType in materialTypes)
+            {
+                <tr>
+                    <td>@mType.Id</td>
+                    <td>@mType.Name</td>
+                    <td>@mType.Description</td>
+                    <td>@mType.SubcategoryId</td>
+                    <td>@mType.Subcategory?.Name</td>
+                    <td>@mType.Subcategory?.CategoryId</td>
+                    <td>@mType.Subcategory?.Category?.Name</td>
+                </tr>
+            }
+        </tbody>
+
+    </table>
+
+}
+
+<button type="button" @onclick="OnClickAddType">Добавить тип номенклатуры</button>
 @code {
 
+    private List<MaterialType>? materialTypes;
+
+    protected async override Task OnInitializedAsync()
+    {
+        materialTypes = (await ViewMaterialTypeByNameUseCase.ExecuteAsync()).ToList();
+    }
+
+    private void OnClickAddType()
+    {
+        navigationManager.NavigateTo("/addtype");
+    }
 }

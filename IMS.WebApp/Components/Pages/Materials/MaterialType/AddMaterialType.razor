@@ -1,0 +1,112 @@
+﻿@page "/addtype"
+@rendermode InteractiveServer
+@inject NavigationManager navigationManager
+@inject IViewSubcategoryUseCase ViewSubcategoryUseCase
+@inject IViewSubcategoryByIdUseCase ViewSubcategoryByIdUseCase
+@inject IAddMaterialTypeUseCase AddMaterialTypeUseCase
+@inject IViewCategoryByNameUseCase ViewCategoryByNameUseCase
+@inject IViewSubcategoryByIdCategoryUseCase ViewSubcategoryByIdCategoryUseCase
+
+<h3>Добавить тип номенклатуры</h3>
+
+@if (materialType is not null)
+{
+    <EditForm Model="materialType" OnValidSubmit="OnValidSubmit">
+        @if (categories is not null)
+        {
+            <InputSelect @bind-Value="categoryId" @bind-Value:after="OnCategoryChanged">
+                @foreach (var category in categories)
+                {
+                    <option value="@category.Id">@category.Name</option>
+                }
+            </InputSelect>
+
+        }
+        <br />
+        @if (subcategories is not null)
+        {
+            <InputSelect @bind-Value="subcategoryId">
+                @foreach (var subcategory in subcategories)
+                {
+                    <option value="@subcategory.Id">@subcategory.Name</option>
+                }
+            </InputSelect>
+        }
+
+        <br />
+        <br />
+        <h3><b>Предпросмотр:</b></h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Тип материала</th>
+                    <th>Описание</th>
+                    <th>ID-Подкатегории</th>
+                    <th>Название-Подкатегории</th>
+                    <th>ID-Категории</th>
+                    <th>Категория</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+        <br />
+
+        <button type="submit">Добавить</button>
+        <button type="button" @onclick="OnClickCancel">Отмена</button>
+    </EditForm>
+}
+
+
+
+
+<p>@categoryId</p>
+<p>@subcategoryId</p>
+
+@code {
+    private MaterialType? materialType = new();
+
+    private List<Category>? categories;
+    private int categoryId;
+
+    private List<Subcategory>? subcategories;
+    private int subcategoryId;
+
+    protected async override Task OnInitializedAsync()
+    {
+        categories = (await ViewCategoryByNameUseCase.ExecuteAsync()).ToList();
+        categoryId = categories.First().Id;
+
+        subcategories = (await ViewSubcategoryByIdCategoryUseCase.ExecuteAsync(categoryId)).ToList();
+        subcategoryId = subcategories.FirstOrDefault()?.Id ?? 0;
+
+    }
+
+    private async Task OnCategoryChanged()
+    {
+        subcategories = (await ViewSubcategoryByIdCategoryUseCase.ExecuteAsync(categoryId)).ToList();
+        subcategoryId = subcategories.FirstOrDefault()?.Id ?? 0;
+
+    }
+
+    private async Task OnValidSubmit()
+    {
+        
+    }
+
+
+
+
+    private void OnClickCancel()
+    {
+        navigationManager.NavigateTo("/type");
+    }
+}

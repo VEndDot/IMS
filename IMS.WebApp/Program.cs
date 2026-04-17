@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using IMS.UseCases.Interfaces.SubcategoryInterfaces;
 using IMS.UseCases.SubcategoryUseCases;
+using IMS.UseCases.Interfaces.MaterialTypeInterfaces;
+using IMS.UseCases.MaterialTypeUseCases;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,6 +54,9 @@ builder.Services.AddTransient<IUserAccountRepository, UserAccountRepository>();
 builder.Services.AddTransient<ICategoryRepository, CategoryRepository>();
 // Subcategory repository
 builder.Services.AddTransient<ISubcategoryRepository, SubcategoryRepository>();
+// Material Type repository
+builder.Services.AddTransient<IMaterialTypeRepository, MaterialTypeRepository>();
+
 
 // 7) Добавляем сервисы
 // user account services
@@ -67,7 +72,11 @@ builder.Services.AddTransient<IViewCategoryByIdUseCase, ViewCategoryByIdUseCase>
 // subcategory services
 builder.Services.AddTransient<IAddSubcategoryUseCase, AddSubcategoryUseCase>();
 builder.Services.AddTransient<IViewSubcategoryUseCase, ViewSubcategoryUseCase>();
-
+builder.Services.AddTransient<IViewSubcategoryByIdUseCase, ViewSubcategoryByIdUseCase>();
+builder.Services.AddTransient<IAddMaterialTypeUseCase, AddMaterialTypeUseCase>();
+builder.Services.AddTransient<IViewSubcategoryByIdCategoryUseCase, ViewSubcategoryByIdCategoryUseCase>();
+// Material Type services
+builder.Services.AddTransient<IViewMaterialTypeByNameUseCase, ViewMaterialTypeByNameUseCase>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
