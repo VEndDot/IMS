@@ -18,6 +18,17 @@ namespace IMS.Plugins.EFCore.Data
 
         public async Task AddMaterialTypeAsync(MaterialType materialType)
         {
+            var exists = await this.db.materialTypes
+                .AnyAsync(mt => mt.SubcategoryId == materialType.SubcategoryId &&
+                                mt.Name.ToLower() == materialType.Name.ToLower());
+
+            if (exists)
+            {
+                throw new InvalidOperationException(
+                    $"Тип материала с наименованием '{materialType.Name}' " +
+                    $"в выбранной подкатегории уже существует");
+            }
+
             await this.db.materialTypes.AddAsync(materialType);
             await this.db.SaveChangesAsync();
         }
@@ -32,6 +43,14 @@ namespace IMS.Plugins.EFCore.Data
             }
 
             return await query.ToListAsync();
+        }
+
+        public async Task<IEnumerable<MaterialType>> GetMaterialTypesByIdSubcategoryAsync(int subcategoryId)
+        {
+            return await this.db.materialTypes.Include(mt => mt.Subcategory)
+                .ThenInclude(s => s!.Category)
+                .Where(mt => mt.SubcategoryId == subcategoryId)
+                .ToListAsync();
         }
     }
 }

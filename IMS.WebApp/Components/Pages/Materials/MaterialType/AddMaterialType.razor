@@ -12,26 +12,46 @@
 @if (materialType is not null)
 {
     <EditForm Model="materialType" OnValidSubmit="OnValidSubmit">
-        @if (categories is not null)
-        {
-            <InputSelect @bind-Value="categoryId" @bind-Value:after="OnCategoryChanged">
-                @foreach (var category in categories)
-                {
-                    <option value="@category.Id">@category.Name</option>
-                }
-            </InputSelect>
+        <DataAnnotationsValidator></DataAnnotationsValidator>
+        <div class="form-group mb-3">
+            @if (categories is not null)
+            {   
+                <label>Категории</label>
+                <InputSelect class="form-select" @bind-Value="categoryId" @bind-Value:after="OnCategoryChanged">
+                    @foreach (var category in categories)
+                    {
+                        <option value="@category.Id">@category.Name</option>
+                    }
+                </InputSelect>
 
-        }
-        <br />
-        @if (subcategories is not null)
-        {
-            <InputSelect @bind-Value="subcategoryId">
-                @foreach (var subcategory in subcategories)
-                {
-                    <option value="@subcategory.Id">@subcategory.Name</option>
-                }
-            </InputSelect>
-        }
+            }
+            <br />
+            @if (subcategories is not null)
+            {
+                <label>Подкатегории</label>
+                <InputSelect class="form-select" @bind-Value="subcategoryId" @bind-Value:after="OnSubcategoryChanged">
+                    @foreach (var subcategory in subcategories)
+                    {
+                        <option value="@subcategory.Id">@subcategory.Name</option>
+                    }
+                </InputSelect>
+            }
+        </div>
+        <div class="form-group mb-3">
+
+            <label>Название типа</label>
+            <InputText class="form-control" @bind-Value="materialType.Name" />
+            <ValidationMessage For="@(() => materialType.Name)"/>
+        </div>
+        
+        <div class="from-group mb-3">
+            <label>Описание типа</label>
+            <InputText class="form-control" @bind-Value="materialType.Description" />
+            <ValidationMessage For="@(() => materialType.Description)"/>
+        </div>
+
+        <button class="btn btn-success" type="submit">Добавить</button>
+        <button class="btn btn-info" type="button" @onclick="OnClickCancel">Отмена</button>
 
         <br />
         <br />
@@ -49,60 +69,93 @@
             </thead>
             <tbody>
                 <tr>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td>@materialType.Name</td>
+                    <td>@materialType.Description</td>
+                    <td>@subcategoryId</td>
+                    <td>@subcategory?.Name</td>
+                    <td>@categoryId</td>
+                    <td>@category?.Name</td>
                 </tr>
             </tbody>
         </table>
         <br />
-
-        <button type="submit">Добавить</button>
-        <button type="button" @onclick="OnClickCancel">Отмена</button>
     </EditForm>
 }
 
-
-
-
-<p>@categoryId</p>
-<p>@subcategoryId</p>
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-warning">@errorMessage</div>
+    
+}
 
 @code {
     private MaterialType? materialType = new();
 
     private List<Category>? categories;
+    private Category? category;
     private int categoryId;
 
     private List<Subcategory>? subcategories;
+    private Subcategory? subcategory;
     private int subcategoryId;
+
+    private string? errorMessage;
 
     protected async override Task OnInitializedAsync()
     {
         categories = (await ViewCategoryByNameUseCase.ExecuteAsync()).ToList();
-        categoryId = categories.First().Id;
 
+        if (categories.Any())
+        {
+            categoryId = categories.First().Id;
+            category = categories.First();
+            await UpdateSubcategoryAsync();
+        }
+    }
+
+    private async Task UpdateSubcategoryAsync()
+    {
         subcategories = (await ViewSubcategoryByIdCategoryUseCase.ExecuteAsync(categoryId)).ToList();
         subcategoryId = subcategories.FirstOrDefault()?.Id ?? 0;
-
+        subcategory = subcategories.FirstOrDefault(s => s.Id == subcategoryId);
     }
 
     private async Task OnCategoryChanged()
     {
-        subcategories = (await ViewSubcategoryByIdCategoryUseCase.ExecuteAsync(categoryId)).ToList();
-        subcategoryId = subcategories.FirstOrDefault()?.Id ?? 0;
+        category = categories?.FirstOrDefault(c => c.Id == categoryId);
+        await UpdateSubcategoryAsync();
 
+    }
+
+    private async Task OnSubcategoryChanged()
+    {
+        subcategory = subcategories?.FirstOrDefault(s => s.Id == subcategoryId);
     }
 
     private async Task OnValidSubmit()
     {
+        if (materialType is not null)
+        {
+            try
+            {
+                var newType = new MaterialType
+                {
+                    Name = materialType.Name,
+                    Description = materialType.Description,
+                    SubcategoryId = subcategoryId,
+                    Subcategory = subcategory!
+                };
+                await AddMaterialTypeUseCase.ExecuteAsync(newType);
+                navigationManager.NavigateTo("/type");
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Ошибка сохранения: {ex.Message}";
+            }
         
+        }
+
     }
-
-
 
 
     private void OnClickCancel()

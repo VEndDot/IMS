@@ -73,10 +73,13 @@ builder.Services.AddTransient<IViewCategoryByIdUseCase, ViewCategoryByIdUseCase>
 builder.Services.AddTransient<IAddSubcategoryUseCase, AddSubcategoryUseCase>();
 builder.Services.AddTransient<IViewSubcategoryUseCase, ViewSubcategoryUseCase>();
 builder.Services.AddTransient<IViewSubcategoryByIdUseCase, ViewSubcategoryByIdUseCase>();
-builder.Services.AddTransient<IAddMaterialTypeUseCase, AddMaterialTypeUseCase>();
 builder.Services.AddTransient<IViewSubcategoryByIdCategoryUseCase, ViewSubcategoryByIdCategoryUseCase>();
+
 // Material Type services
 builder.Services.AddTransient<IViewMaterialTypeByNameUseCase, ViewMaterialTypeByNameUseCase>();
+builder.Services.AddTransient<IAddMaterialTypeUseCase, AddMaterialTypeUseCase>();
+builder.Services.AddTransient<IViewMaterialTypesByIdSubcategoryUseCase, ViewMaterialTypesByIdSubcategoryUseCase>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

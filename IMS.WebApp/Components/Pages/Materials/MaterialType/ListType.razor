@@ -2,6 +2,33 @@
 @rendermode InteractiveServer
 @inject NavigationManager navigationManager
 @inject IViewMaterialTypeByNameUseCase ViewMaterialTypeByNameUseCase
+@inject IViewCategoryByNameUseCase ViewCategoryByNameUseCase
+@inject IViewSubcategoryByIdCategoryUseCase ViewSubcategoryByIdCategoryUseCase
+@inject IViewSubcategoryUseCase ViewSubcategoryUseCase
+@inject IViewMaterialTypesByIdSubcategoryUseCase ViewMaterialTypesByIdSubcategoryUseCase
+
+@if (categories is not null)
+{
+    <InputSelect @bind-Value="categoryId" @bind-Value:after="OnCategoryChanged">
+        @foreach (var category in categories)
+        {
+            <option value="@category.Id">@category.Name</option>    
+        }
+    </InputSelect>
+}
+<p>Категория: @categoryId</p>
+
+@if (subcategories is not null)
+{
+    <InputSelect @bind-Value="subcategoryId" @bind-Value:after="OnSubcategoryChanged">
+        @foreach (var subcategory in subcategories)
+        {
+            <option value="@subcategory.Id">@subcategory.Name</option>
+        }
+    </InputSelect>
+}
+
+<p>Подкатегория: @subcategoryId</p>
 
 <h3>Список типов номенклатуры</h3>
 @if (materialTypes is not null)
@@ -34,7 +61,6 @@
         </tbody>
 
     </table>
-
 }
 
 <button type="button" @onclick="OnClickAddType">Добавить тип номенклатуры</button>
@@ -42,9 +68,68 @@
 
     private List<MaterialType>? materialTypes;
 
+    private List<Category>? categories;
+    private int categoryId;
+
+    private List<Subcategory>? subcategories;
+    private int subcategoryId;
+
     protected async override Task OnInitializedAsync()
     {
-        materialTypes = (await ViewMaterialTypeByNameUseCase.ExecuteAsync()).ToList();
+        categories = (await ViewCategoryByNameUseCase.ExecuteAsync()).ToList();
+
+        if (categories.Any())
+        {
+            categoryId = categories.FirstOrDefault()!.Id;
+        }
+        await UpdateSubcategoriesAsync();
+        await UpdateMaterialTypesAsync();
+
+    }
+
+    private async Task UpdateSubcategoriesAsync()
+    {
+        if (categoryId <= 0)
+        {
+            return;
+        }
+
+        subcategories = (await ViewSubcategoryByIdCategoryUseCase.ExecuteAsync(categoryId)).ToList();
+
+        if (subcategories.Any())
+        {
+            subcategoryId = subcategories.First().Id;
+        }
+        else
+        {
+            subcategoryId = 0;    
+        }
+
+    }
+
+    private async Task UpdateMaterialTypesAsync()
+    {
+        if (subcategoryId > 0)
+        {
+            // var all = await ViewMaterialTypeByNameUseCase.ExecuteAsync();
+            materialTypes = (await ViewMaterialTypesByIdSubcategoryUseCase.ExecuteAsync(subcategoryId))
+                    .ToList();//all.Where(x => x.SubcategoryId == subcategoryId).ToList();
+        }
+        else
+        {
+            materialTypes = (await ViewMaterialTypeByNameUseCase.ExecuteAsync()).ToList();
+        }
+    }
+
+    private async Task OnCategoryChanged()
+    {
+        await UpdateSubcategoriesAsync();
+        await UpdateMaterialTypesAsync();
+    }
+
+    private async Task OnSubcategoryChanged()
+    {
+        await UpdateMaterialTypesAsync();    
     }
 
     private void OnClickAddType()
