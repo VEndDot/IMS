@@ -4,6 +4,7 @@
 @inject IViewCategoryByNameUseCase ViewCategoryByNameUseCase
 @inject IViewSubcategoryByIdCategoryUseCase ViewSubcategoryByIdCategoryUseCase
 @inject IViewMaterialTypesByIdSubcategoryUseCase ViewMaterialTypesByIdSubcategoryUseCase
+@inject IAddMaterialNomenclatureUseCase AddMaterialNomenclatureUseCase
 
 <h3>Создать материал (Номенклатура)</h3>
 <br />
@@ -199,7 +200,7 @@
         {
             try
             {
-                var newType = new MaterialNomenclature
+                var newMaterial = new MaterialNomenclature
                 {
                     Name = materialNomenclature.Name,
                     Sku = materialNomenclature.Sku,
@@ -210,7 +211,7 @@
                     TypeId = materialTypeId,
                     Type = materialType!,
                 };
-
+                await AddMaterialNomenclatureUseCase.ExecuteAsync(newMaterial);
                 navigationManager.NavigateTo("/material");
             }
             catch (Exception ex)

@@ -11,6 +11,8 @@ using IMS.UseCases.Interfaces.SubcategoryInterfaces;
 using IMS.UseCases.SubcategoryUseCases;
 using IMS.UseCases.Interfaces.MaterialTypeInterfaces;
 using IMS.UseCases.MaterialTypeUseCases;
+using IMS.UseCases.Interfaces.MaterialNomenclatureInterfaces;
+using IMS.UseCases.MaterialNomenclatureUseCases;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -56,7 +58,8 @@ builder.Services.AddTransient<ICategoryRepository, CategoryRepository>();
 builder.Services.AddTransient<ISubcategoryRepository, SubcategoryRepository>();
 // Material Type repository
 builder.Services.AddTransient<IMaterialTypeRepository, MaterialTypeRepository>();
-
+// Material Nomenclature repository
+builder.Services.AddTransient<IMaterialNomenclatureRepository, MaterialNomenclatureRepository>();
 
 // 7) Добавляем сервисы
 // user account services
@@ -74,11 +77,12 @@ builder.Services.AddTransient<IAddSubcategoryUseCase, AddSubcategoryUseCase>();
 builder.Services.AddTransient<IViewSubcategoryUseCase, ViewSubcategoryUseCase>();
 builder.Services.AddTransient<IViewSubcategoryByIdUseCase, ViewSubcategoryByIdUseCase>();
 builder.Services.AddTransient<IViewSubcategoryByIdCategoryUseCase, ViewSubcategoryByIdCategoryUseCase>();
-
 // Material Type services
 builder.Services.AddTransient<IViewMaterialTypeByNameUseCase, ViewMaterialTypeByNameUseCase>();
 builder.Services.AddTransient<IAddMaterialTypeUseCase, AddMaterialTypeUseCase>();
 builder.Services.AddTransient<IViewMaterialTypesByIdSubcategoryUseCase, ViewMaterialTypesByIdSubcategoryUseCase>();
+// Material Nomenclature services
+builder.Services.AddTransient<IAddMaterialNomenclatureUseCase, AddMaterialNomenclatureUseCase>();
 
 var app = builder.Build();
 
