@@ -1,6 +1,13 @@
 ﻿@page "/material"
-<h3>Список материалов</h3>
+@rendermode InteractiveServer
+@inject NavigationManager navigationManager
+<h3>Список материалов (Номенклатура)</h3>
+
+<button type="button" @onclick="OnClickAddMaterial">Добавить материал</button>
 
 @code {
-
+    private void OnClickAddMaterial()
+    {
+        navigationManager.NavigateTo("/addmaterial");
+    }
 }

@@ -1,0 +1,228 @@
+﻿@page "/addmaterial"
+@rendermode InteractiveServer
+@inject NavigationManager navigationManager
+@inject IViewCategoryByNameUseCase ViewCategoryByNameUseCase
+@inject IViewSubcategoryByIdCategoryUseCase ViewSubcategoryByIdCategoryUseCase
+@inject IViewMaterialTypesByIdSubcategoryUseCase ViewMaterialTypesByIdSubcategoryUseCase
+
+<h3>Создать материал (Номенклатура)</h3>
+<br />
+
+@if (materialNomenclature is not null)
+{
+    <EditForm Model="materialNomenclature" OnValidSubmit="OnValidSubmit">
+        <DataAnnotationsValidator></DataAnnotationsValidator>
+        <div class="form-group mb-3">
+            @if (categories is not null)
+            {
+                <label>Категории</label>
+                <InputSelect class="form-control" @bind-Value="categoryId" @bind-Value:after="OnCategoryChanged">
+                    @foreach (var category in categories)
+                    {
+                        <option value="@category.Id">@category.Name</option>
+                    }
+                </InputSelect>
+            }
+
+            @if (subcategories is not null)
+            {
+                <label>Подкатегории</label>
+                <InputSelect class="form-select" @bind-Value="subcategoryId" @bind-Value:after="OnSubcategoryChanged">
+                    @foreach (var subcategory in subcategories)
+                    {
+                        <option value="@subcategory.Id">@subcategory.Name</option>
+                    }
+                </InputSelect>
+            }
+
+            @if (materialTypes is not null)
+            {
+                <label>Тип</label>
+                <InputSelect class="form-select" @bind-Value="materialTypeId" @bind-Value:after="OnMaterialTupeChanged">
+                    @foreach (var type in materialTypes)
+                    {
+                        <option value="@type.Id">@type.Name</option>
+                    }
+                </InputSelect>
+            }
+        </div>
+
+        <div class="form-group mb-3">
+            <label>Название материала</label>
+            <InputText class="form-control" @bind-Value="materialNomenclature.Name" />
+            <ValidationMessage For="@(() => materialNomenclature.Name)" />
+        </div>
+
+        <div class="form-group mb-3">
+            <label>Артикул</label>
+            <InputText class="form-control" @bind-Value="materialNomenclature.Sku" />
+            <ValidationMessage For="@(() => materialNomenclature.Sku)" />
+        </div>
+
+        <div class="form-group mb-3">
+            <label>ГОСТ</label>
+            <InputText class="form-control" @bind-Value="materialNomenclature.Gost" />
+            <ValidationMessage For="@(() => materialNomenclature.Gost)" />
+        </div>
+
+        <div class="form-group mb-3">
+            <label>Сечение</label>
+            <InputNumber class="form-control" @bind-Value="materialNomenclature.CrossSection" />
+            <ValidationMessage For="@(() => materialNomenclature.CrossSection)" />
+        </div>
+
+        <div class="form-group mb-3">
+            <label>Единица измерения</label>
+            <InputText class="form-control" @bind-Value="materialNomenclature.Unit" />
+            <ValidationMessage For="@(() => materialNomenclature.Unit)" />
+        </div>
+
+        <div class="form-group mb-3">
+            <label>Текущий остаток</label>
+            <InputNumber class="form-control" @bind-Value="materialNomenclature.CurrentStock" />
+            <ValidationMessage For="@(() => materialNomenclature.CurrentStock)" />
+        </div>
+
+        <br />
+        <br />
+        <h3><b>Предпросмотр:</b></h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Материал</th>
+                    <th>Артикул</th>
+                    <th>Гост</th>
+                    <th>Сечение</th>
+                    <th>Единица измерения</th>
+                    <th>Текущий остаток</th>
+                    <th>Id-Типа</th>
+                    <th>Тип</th>
+                    <th>Описание типа</th>
+                    <th>Id-Подкатегории</th>
+                    <th>Подкатегория</th>
+                    <th>Id-Категории</th>
+                    <th>Категория</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>@materialNomenclature.Name</td>
+                    <td>@materialNomenclature.Sku</td>
+                    <td>@materialNomenclature.Gost</td>
+                    <td>@materialNomenclature.CrossSection</td>
+                    <td>@materialNomenclature.Unit</td>
+                    <td>@materialNomenclature.CurrentStock</td>
+                    <td>@materialTypeId</td>
+                    <td>@materialType?.Name</td>
+                    <td>@materialType?.Description</td>
+                    <td>@subcategoryId</td>
+                    <td>@subcategory?.Name</td>
+                    <td>@categoryId</td>
+                    <td>@category?.Name</td>
+                </tr>
+            </tbody>
+        </table>
+        <br />
+        <button type="submit">Добавить</button>
+        <button type="button" @onclick="OnClickCancel">Отмена</button>
+    </EditForm>
+}
+
+@code {
+
+    private MaterialNomenclature? materialNomenclature = new();
+
+    private List<Category>? categories;
+    private Category? category;
+    private int categoryId;
+
+    private List<Subcategory>? subcategories;
+    private Subcategory? subcategory;
+    private int subcategoryId;
+
+    private List<MaterialType>? materialTypes;
+    private MaterialType? materialType;
+    private int materialTypeId;
+
+    private string? errorMessage;
+
+    protected async override Task OnInitializedAsync()
+    {
+        categories = (await ViewCategoryByNameUseCase.ExecuteAsync()).ToList();
+
+        if (categories.Any())
+        {
+            categoryId = categories.First().Id;
+            category = categories.First();
+
+            await UpdateSubcategoryAsync();
+            await UpdateMaterialTypeAsync();
+        }
+    }
+
+    private async Task UpdateSubcategoryAsync()
+    {
+        subcategories = (await ViewSubcategoryByIdCategoryUseCase.ExecuteAsync(categoryId)).ToList();
+        subcategoryId = subcategories.FirstOrDefault()?.Id ?? 0;
+        subcategory = subcategories.FirstOrDefault(s => s.Id == subcategoryId);
+    }
+
+    private async Task UpdateMaterialTypeAsync()
+    {
+        materialTypes = (await ViewMaterialTypesByIdSubcategoryUseCase.ExecuteAsync(subcategoryId)).ToList();
+        materialTypeId = materialTypes.FirstOrDefault()?.Id ?? 0;
+        materialType = materialTypes.FirstOrDefault(mt => mt.Id == materialTypeId);
+    }
+
+    private async Task OnCategoryChanged()
+    {
+        category = categories?.FirstOrDefault(c => c.Id == categoryId);
+        await UpdateSubcategoryAsync();
+        await UpdateMaterialTypeAsync();
+
+    }
+
+    private async Task OnSubcategoryChanged()
+    {
+        subcategory = subcategories?.FirstOrDefault(s => s.Id == subcategoryId);
+        await UpdateMaterialTypeAsync();
+    }
+
+    private async Task OnMaterialTupeChanged()
+    {
+        materialType = materialTypes?.FirstOrDefault(mt => mt.Id == materialTypeId);
+    }
+
+    private async Task OnValidSubmit()
+    {
+        if (materialNomenclature is not null)
+        {
+            try
+            {
+                var newType = new MaterialNomenclature
+                {
+                    Name = materialNomenclature.Name,
+                    Sku = materialNomenclature.Sku,
+                    Gost = materialNomenclature.Gost,
+                    CrossSection = materialNomenclature.CrossSection,
+                    Unit = materialNomenclature.Unit,
+                    CurrentStock = materialNomenclature.CurrentStock,
+                    TypeId = materialTypeId,
+                    Type = materialType!,
+                };
+
+                navigationManager.NavigateTo("/material");
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Ошибка сохранения: {ex.Message}";
+            }
+        }
+    }
+
+
+    private void OnClickCancel()
+    {
+        navigationManager.NavigateTo("/material");
+    }
+}
