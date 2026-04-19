@@ -13,6 +13,8 @@ using IMS.UseCases.Interfaces.MaterialTypeInterfaces;
 using IMS.UseCases.MaterialTypeUseCases;
 using IMS.UseCases.Interfaces.MaterialNomenclatureInterfaces;
 using IMS.UseCases.MaterialNomenclatureUseCases;
+using IMS.UseCases.Interfaces.WriteOffInterfaces;
+using IMS.UseCases.WriteOffUseCases;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -60,6 +62,8 @@ builder.Services.AddTransient<ISubcategoryRepository, SubcategoryRepository>();
 builder.Services.AddTransient<IMaterialTypeRepository, MaterialTypeRepository>();
 // Material Nomenclature repository
 builder.Services.AddTransient<IMaterialNomenclatureRepository, MaterialNomenclatureRepository>();
+// WriteOff repository
+builder.Services.AddTransient<IWriteOffRepository, WriteOffRepository>();
 
 // 7) Добавляем сервисы
 // user account services
@@ -84,6 +88,8 @@ builder.Services.AddTransient<IViewMaterialTypesByIdSubcategoryUseCase, ViewMate
 // Material Nomenclature services
 builder.Services.AddTransient<IAddMaterialNomenclatureUseCase, AddMaterialNomenclatureUseCase>();
 builder.Services.AddTransient<IViewMaterialNomenclatureUseCase, ViewMaterialNomenclatureUseCase>();
+// WriteOff services
+builder.Services.AddTransient<IAddWriteOffUseCase, AddWriteOffUseCase>();
 
 var app = builder.Build();
 

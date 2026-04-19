@@ -4,11 +4,13 @@
 @inject IViewSubcategoryUseCase ViewSubcategoryUseCase
 @inject IViewMaterialTypeByNameUseCase ViewMaterialTypeByNameUseCase
 @inject IViewMaterialNomenclatureUseCase ViewMaterialNomenclatureUseCase
+@inject IAddWriteOffUseCase AddWriteOffUseCase
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <AuthorizeView>
     <Authorized>
+        <p>@context.User.Identity.Name</p>
         <p>@currentMasterId</p>
-        
     </Authorized>
 </AuthorizeView>
 
@@ -35,7 +37,7 @@
 <div class="mb-3">
     <label class="form-label">Причина списания</label>
     <textarea @bind="reason" class="form-control" rows="3"
-              placeholder="Например: ремон ВЛ-0.4кВ, ул.Ленина, опора №5"></textarea>
+              placeholder="Например: ремонт ВЛ-0.4кВ, ул.Ленина, опора №5"></textarea>
 </div>
 
 
@@ -125,8 +127,8 @@
 </button>
 
 @code {
-    [CascadingParameter]
-    private HttpContext? HttpContext { get; set; }
+    //[CascadingParameter]
+    //private HttpContext? HttpContext { get; set; }
 
     // Данные формы
     private string reason = string.Empty;
@@ -163,21 +165,33 @@
     // Инициализация: загрузка справочников + текущий пользователь
     protected async override Task OnInitializedAsync()
     {
+        //currentMasterId = 1;
         await LoadCurrentUserAsync();
         await LoadReferenceDataAsync();
     }
 
     private async Task LoadCurrentUserAsync()
     {
-        // Получаем Id мастера
-        if (HttpContext?.User.Identity?.IsAuthenticated == true)
+
+        var autState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var user = autState.User;
+        if (user.Identity?.IsAuthenticated == true)
         {
-            var userIdClaim = HttpContext.User.FindFirst("UserId");
+            var userIdClaim = user.FindFirst("UserId");
             if (userIdClaim is not null)
             {
                 currentMasterId = int.Parse(userIdClaim.Value);
             }
         }
+        // Получаем Id мастера
+        // if (HttpContext?.User.Identity?.IsAuthenticated == true)
+        // {
+        //     var userIdClaim = HttpContext.User.FindFirst("UserId");
+        //     if (userIdClaim is not null)
+        //     {
+        //         currentMasterId = int.Parse(userIdClaim.Value);
+        //     }
+        // }
     }
 
     private async Task LoadReferenceDataAsync()
@@ -264,7 +278,7 @@
             };
 
             // Вызываем сервис 
-            // await AddWriteOffUseCase.ExecuteAsync(writeOff, currentMasterId);
+            await AddWriteOffUseCase.ExecuteAsync(writeOff, currentMasterId);
 
             successMessage = "Материалы успешно списаны!";
 
