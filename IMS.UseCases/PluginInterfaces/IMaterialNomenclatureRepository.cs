@@ -8,5 +8,7 @@ namespace IMS.UseCases.PluginInterfaces
     public interface IMaterialNomenclatureRepository
     {
         Task AddMaterialNomenclatureAsync(MaterialNomenclature materialNomenclature);
+        Task<IEnumerable<MaterialNomenclature>> GetMaterialNomenclature(string searchTerm = "");
+
     }
 }

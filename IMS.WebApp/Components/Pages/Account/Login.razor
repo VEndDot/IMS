@@ -60,7 +60,8 @@
         var claims = new List<Claim>
         {
             new Claim(ClaimTypes.Name, Model.UserName), // имя пользователя    
-            new Claim(ClaimTypes.Role, userAccount.Role) // роль пользователя
+            new Claim(ClaimTypes.Role, userAccount.Role), // роль пользователя
+            new Claim("UserId", userAccount.Id.ToString())
         };
 
         // Генерируем объект идентификации утверждений

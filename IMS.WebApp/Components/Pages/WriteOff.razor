@@ -1,0 +1,282 @@
+﻿@page "/writeoff"
+@rendermode InteractiveServer
+@inject IViewCategoryByNameUseCase ViewCategoryByNameUseCase
+@inject IViewSubcategoryUseCase ViewSubcategoryUseCase
+@inject IViewMaterialTypeByNameUseCase ViewMaterialTypeByNameUseCase
+@inject IViewMaterialNomenclatureUseCase ViewMaterialNomenclatureUseCase
+
+<AuthorizeView>
+    <Authorized>
+        <p>@currentMasterId</p>
+        
+    </Authorized>
+</AuthorizeView>
+
+<h3>Списание материалов</h3>
+
+<!-- Сообщения об успехе/ошибке -->
+@if (!string.IsNullOrWhiteSpace(successMessage))
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @successMessage
+        <button type="button" class="btn-close" @onclick="() => successMessage = null"></button>
+    </div>
+}
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @errorMessage
+        <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
+    </div>
+}
+
+<!-- Причина списания -->
+<div class="mb-3">
+    <label class="form-label">Причина списания</label>
+    <textarea @bind="reason" class="form-control" rows="3"
+              placeholder="Например: ремон ВЛ-0.4кВ, ул.Ленина, опора №5"></textarea>
+</div>
+
+
+<!-- Динамический список материалов -->
+<h5 class="mt-4">Материалы для списания:</h5>
+
+@foreach (var (item, index) in items.Select((value, i) => (value, i)))
+{
+    <div class="card mb-2">
+        <div class="card-body">
+            <div class="row g-2 align-items-center">
+                
+                <!-- Каскадный выбор материала -->
+                <div class="col-md-5">
+                    <label class="form-label small">Материал #@(index + 1)</label>
+
+                    <!-- Категория -->
+                    <InputSelect @bind-Value="item.CategoryId" @bind-Value:after="() => OnCategoryChanged(index)" 
+                        class="form-select form-select-sm mb-1">
+                        <option value="0">-- Категория --</option>
+                        @foreach (var category in categories)
+                        {
+                            <option value="@category.Id">@category.Name</option>    
+                        }
+                    </InputSelect>
+
+                    <!-- Подкатегория -->
+                    <InputSelect @bind-Value="item.SubcategoryId" @bind-Value:after="() => OnSubcategoryChanged(index)" 
+                                 class="form-select form-select-sm mb-1" disabled="@(item.CategoryId == 0)">
+                        <option value="0">-- Подкатегория --</option>
+                        @foreach (var subcategory in GetFileredSubcategories(item.CategoryId))
+                        {
+                            <option value="@subcategory.Id">@subcategory.Name</option>
+                        }
+                    </InputSelect>
+
+                    <!-- Тип -->
+                    <InputSelect @bind-Value="item.TypeId" @bind-Value:after="() => OnTypeChanged(index)"
+                                 class="form-select form-select-sm mb-1" disabled="@(item.SubcategoryId == 0)">
+                        <option value="0">-- Тип --</option>
+                        @foreach (var type in GetFilteredTypes(item.SubcategoryId))
+                        {
+                            <option value="@type.Id">@type.Name</option>
+                        }
+                    </InputSelect>
+
+                    <!-- Номенклатура -->
+                    <InputSelect @bind-Value="item.NomenclatureId" class="form-select form-select-sm"
+                                 disabled="@(item.TypeId == 0)">
+                        <option value="0">-- Материал --</option>
+                        @foreach (var nomenclature in GetFilteredNomenclatures(item.TypeId))
+                        {
+                            <option value="@nomenclature.Id">
+                                @nomenclature.Name @(nomenclature.Sku is not null ? $"({nomenclature.Sku})" : "")
+                            </option>    
+                        }
+                    </InputSelect>
+                </div>
+
+                <!-- Количество -->
+                <div class="col-md-3">
+                    <label class="form-label small">Количество</label>
+                    <InputNumber @bind-Value="item.Quantity" class="form-control form-control-sm"
+                                 placeholder="0" min="1" step="any" />
+                    <small class="text-muted">@GetUnit(item.NomenclatureId)</small>
+                </div>
+
+                <!-- Удалить строку -->
+                <div>
+                    <button class="btn btn-sm btn-danger w-100" @onclick="() => RemoveItem(index)">
+                        Удалить
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- Добавить строку -->
+<button class="btn btn-outline-secondary btn-sm" @onclick="AddItem">
+   + Добавить материал
+</button>
+
+<!-- Списать материал -->
+<button class="btn btn-primary" @onclick="SubmitAsync" disabled="@(!CanSubmit)">
+    Списать материалы
+</button>
+
+@code {
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    // Данные формы
+    private string reason = string.Empty;
+    private string? successMessage;
+    private string? errorMessage;
+
+    // Текущий пользователь
+    private int currentMasterId;
+
+    // Справочники
+    private List<Category> categories = new();
+    private List<Subcategory> subcategories = new();
+    private List<MaterialType> materialTypes = new();
+    private List<MaterialNomenclature> nomenclatures = new();
+
+    // Строки списания
+    private List<WriteOffItemRow> items = new() { new() };
+
+    // Вспомогательный класс для троки формы
+    private class WriteOffItemRow
+    {
+        public int CategoryId { get; set; }
+        public int SubcategoryId { get; set; }
+        public int TypeId { get; set; }
+        public int NomenclatureId { get; set; }
+        public decimal Quantity { get; set; } = 1;
+    }
+
+    // Флаг проверки формы
+    private bool CanSubmit =>
+        !string.IsNullOrWhiteSpace(reason) &&
+        items.Any(i => i.NomenclatureId > 0 && i.Quantity > 0);
+
+    // Инициализация: загрузка справочников + текущий пользователь
+    protected async override Task OnInitializedAsync()
+    {
+        await LoadCurrentUserAsync();
+        await LoadReferenceDataAsync();
+    }
+
+    private async Task LoadCurrentUserAsync()
+    {
+        // Получаем Id мастера
+        if (HttpContext?.User.Identity?.IsAuthenticated == true)
+        {
+            var userIdClaim = HttpContext.User.FindFirst("UserId");
+            if (userIdClaim is not null)
+            {
+                currentMasterId = int.Parse(userIdClaim.Value);
+            }
+        }
+    }
+
+    private async Task LoadReferenceDataAsync()
+    {
+        categories = (await ViewCategoryByNameUseCase.ExecuteAsync()).ToList();
+        subcategories = (await ViewSubcategoryUseCase.ExecuteAsync()).ToList();
+        materialTypes = (await ViewMaterialTypeByNameUseCase.ExecuteAsync()).ToList();
+        nomenclatures = (await ViewMaterialNomenclatureUseCase.ExecuteAsync()).ToList();
+    }
+
+    // Фильтрация каскадных списков
+    private List<Subcategory> GetFileredSubcategories(int categoryId) =>
+        subcategories.Where(s => s.CategoryId == categoryId).ToList();
+
+    private List<MaterialType> GetFilteredTypes(int subcategoryId) =>
+        materialTypes.Where(mt => mt.SubcategoryId == subcategoryId).ToList();
+
+    private List<MaterialNomenclature> GetFilteredNomenclatures(int typeId) =>
+        nomenclatures.Where(n => n.TypeId == typeId).ToList();
+
+
+    private string GetUnit(int nomenclatureId) =>
+        nomenclatures.FirstOrDefault(n => n.Id == nomenclatureId)?.Unit ?? "шт.";
+
+
+    // Обработчик изменения каскадов (сброс зависимых полей)
+    private void OnCategoryChanged(int index)
+    {
+        items[index].SubcategoryId = 0;
+        items[index].TypeId = 0;
+        items[index].NomenclatureId = 0;
+    }
+
+    private void OnSubcategoryChanged(int index)
+    {
+        items[index].TypeId = 0;
+        items[index].NomenclatureId = 0;
+    }
+
+    private void OnTypeChanged(int index)
+    {
+        items[index].NomenclatureId = 0;
+    }
+
+    // Управление строками
+    private void AddItem() => items.Add(new WriteOffItemRow());
+
+    private void RemoveItem(int index)
+    {
+        if (items.Count > 1)
+        {
+            items.RemoveAt(index);    
+        }
+    }
+
+    // Отправка формы
+
+    private async Task SubmitAsync()
+    {
+        errorMessage = null;
+        successMessage = null;
+        try
+        {
+            // фильтруем заполненные строки
+            var validItems = items
+                .Where(i => i.NomenclatureId > 0 && i.Quantity > 0)
+                .Select(i => new MaterialWriteOffItem
+                    {
+                        NomenclatureId = i.NomenclatureId,
+                        Quantity = i.Quantity
+                    }).ToList();
+
+            if (!validItems.Any())
+            {
+                errorMessage = "Добавте хотя бы один материал для списания";
+                return;
+            }
+
+            // сущность списания
+            var writeOff = new MaterialWriteOff
+            {
+                Reason = reason,
+                Items = validItems
+            };
+
+            // Вызываем сервис 
+            // await AddWriteOffUseCase.ExecuteAsync(writeOff, currentMasterId);
+
+            successMessage = "Материалы успешно списаны!";
+
+            // Очищаем форму
+            reason = string.Empty;
+            items = new() { new() };
+
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+
+    }
+}

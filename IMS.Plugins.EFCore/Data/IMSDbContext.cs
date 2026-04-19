@@ -20,6 +20,8 @@ namespace IMS.Plugins.EFCore.Data
         public DbSet<Subcategory> Subcategories { get; set; }
         public DbSet<MaterialType> materialTypes { get; set; }
         public DbSet<MaterialNomenclature> materialNomenclatures { get; set; }
+        public DbSet<MaterialWriteOff> materialWriteOffs { get; set; }
+        public DbSet<MaterialWriteOffItem> MaterialWriteOffItems { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -31,6 +33,8 @@ namespace IMS.Plugins.EFCore.Data
             modelBuilder.ApplyConfiguration(new SubcategoryConfiguration());
             modelBuilder.ApplyConfiguration(new MaterialTypeConfiguration());
             modelBuilder.ApplyConfiguration(new MaterialNomenclatureConfiguration());
+            modelBuilder.ApplyConfiguration(new MaterialWriteOffConfiguration());
+            modelBuilder.ApplyConfiguration(new MaterialWriteOffItemConfiguration());
         }
 
     }

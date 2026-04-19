@@ -1,11 +1,39 @@
 ﻿@page "/material"
 @rendermode InteractiveServer
 @inject NavigationManager navigationManager
+@inject IViewMaterialNomenclatureUseCase ViewMaterialNomenclatureUseCase
+
 <h3>Список материалов (Номенклатура)</h3>
+
+<label>Поиск материалов</label>
+<InputText @bind-Value="searchMaterial"/>
+<button type="button" @onclick="OnClickSearchMaterial">Поиск</button>
+
+@if (materialNomenclatures is not null)
+{
+    @foreach (var material in materialNomenclatures)
+    {
+        <p>@material.Name</p>    
+    }
+}
 
 <button type="button" @onclick="OnClickAddMaterial">Добавить материал</button>
 
 @code {
+
+    private List<MaterialNomenclature>? materialNomenclatures;
+    private string? searchMaterial;
+
+    protected async override Task OnInitializedAsync()
+    {
+        materialNomenclatures = (await ViewMaterialNomenclatureUseCase.ExecuteAsync()).ToList();
+    }
+
+    private async Task OnClickSearchMaterial()
+    {
+        materialNomenclatures = (await ViewMaterialNomenclatureUseCase.ExecuteAsync(searchMaterial!)).ToList();
+    }
+
     private void OnClickAddMaterial()
     {
         navigationManager.NavigateTo("/addmaterial");

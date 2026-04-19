@@ -17,7 +17,7 @@
             @if (categories is not null)
             {
                 <label>Категории</label>
-                <InputSelect class="form-control" @bind-Value="categoryId" @bind-Value:after="OnCategoryChanged">
+                <InputSelect class="form-select" @bind-Value="categoryId" @bind-Value:after="OnCategoryChanged">
                     @foreach (var category in categories)
                     {
                         <option value="@category.Id">@category.Name</option>

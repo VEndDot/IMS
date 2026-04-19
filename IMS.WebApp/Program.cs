@@ -83,6 +83,7 @@ builder.Services.AddTransient<IAddMaterialTypeUseCase, AddMaterialTypeUseCase>()
 builder.Services.AddTransient<IViewMaterialTypesByIdSubcategoryUseCase, ViewMaterialTypesByIdSubcategoryUseCase>();
 // Material Nomenclature services
 builder.Services.AddTransient<IAddMaterialNomenclatureUseCase, AddMaterialNomenclatureUseCase>();
+builder.Services.AddTransient<IViewMaterialNomenclatureUseCase, ViewMaterialNomenclatureUseCase>();
 
 var app = builder.Build();
 
