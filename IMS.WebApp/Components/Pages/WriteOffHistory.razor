@@ -1,0 +1,223 @@
+﻿@page "/history"
+@rendermode InteractiveServer
+@inject IViewUsersAccountByNameUseCase ViewUsersAccountByNameUseCase
+@inject IViewWriteOffHistoryUseCase ViewWriteOffHistoryUseCase
+
+@using UserAccountModel = IMS.CoreBusiness.Entities.UserAccount
+
+<h3>История списаний</h3>
+<!-- Фильтры -->
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="row g-3">
+
+            <!-- Дата: c -->
+            <div class="col-md-3">
+                <label class="form-label small">С даты</label>
+                <InputDate @bind-Value="dateForm" class="form-control form-control-sm"/>
+            </div>
+
+            <!-- Дата: по -->
+            <div class="col-md-3">
+                <label class="form-label small">По дату</label>
+                <InputDate @bind-Value="dateTo" class="form-select form-select-sm" />
+            </div>
+
+            <!-- Мастер -->
+            <div class="col-md-4">
+                <label class="form-label small">Мастер</label>
+                <InputSelect @bind-Value="selectedMasterId" class="form-select form-select-sm">
+                    <option value="0">-- Все мастера --</option>
+                    @foreach (var master in masters)
+                    {
+                        <option value="@master.Id">@master.FirstName</option>    
+                    }
+                </InputSelect>
+            </div>
+
+            <div class="col-md-2 d-flex align-items-end gap-2">
+                <button class="btn btn-primary btn-sm w-100" @onclick="LoadHistoryAsync">Найти</button>
+                <button class="btn btn-outline-secondary btn-sm" @onclick="ResetFilters">Сброс</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ошибка загрузки -->
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>    
+}
+
+<!-- Результаты -->
+@if (isLoading)
+{
+    <div class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Загрузка...</span>
+        </div>
+        <p class="text-muted mt-2">Загрузка истории списаний...</p>
+    </div>
+}
+else if (writeOffs?.Any() == true)
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 15%">#1 Дата</th>
+                    <th style="width: 15%">#2 Мастер</th>
+                    <th style="width: 25%">#3 Причина</th>
+                    <th style="width: 35%">#4 Материалы</th>
+                    <th style="width: 10%" class="text-end">#5 Инфо</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var writeOff in writeOffs)
+                {
+                    <tr>
+                        <td>@writeOff.WriteOffDate.ToString("dd.MM.yyyy HH:mm")</td>
+                        <td>@(writeOff.Master.FirstName ?? "Неизвестно")</td>
+                        <td>@writeOff.Reason</td>
+                        <td>
+                            @foreach (var item in writeOff.Items)
+                            {
+                                var nomenclatyre = item.Nomenclature;
+                                var type = nomenclatyre?.Type?.Name ?? "Без типа";
+                                var subcategory = nomenclatyre?.Type?.Subcategory?.Name ?? "";
+                                <div class="small mb-1">
+                                    <strong>Материал: @nomenclatyre?.Name</strong><br />
+                                    <span class="text-muted">Тип: @type</span><br/>
+                                    <span class="text-muted small">Подкатегория: @subcategory</span><br />
+                                    <span class="text-info text-uppercase">Количество:</span> 
+                                    <span>@Math.Round(item.Quantity, 1) @nomenclatyre?.Unit</span>
+                                </div>
+                            }
+                        </td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-outline-primary"
+                            @onclick="@(() => ToggleDetails(writeOff.Id))">
+                                @(expandedWriteOffId == writeOff.Id ? "Скрыть" : "Детали")
+                            </button>
+                        </td>
+                    </tr>
+
+                    <!-- Показываем детали -->
+                    @if (expandedWriteOffId == writeOff.Id)
+                    {
+                        <tr class="table-light">
+                            <td colspan="5" class="p-0">
+                                <div class="p-3 bg-light border-top">
+                                    <h6 class="mb-2">-- Детали списания №@writeOff.Id --</h6>
+                                    <table class="table table-sm table-bordered mb-0">
+                                        <thead>
+                                            <tr class="text-muted small">
+                                                <th>Материал</th>
+                                                <th>Артикул</th>
+                                                <th>ГОСТ</th>
+                                                <th>Количество</th>
+                                                <th>Ед.изм</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in writeOff.Items)
+                                            {
+                                                var nom = item.Nomenclature;
+                                                <tr>
+                                                    <td>@nom?.Name</td>
+                                                    <td>@(nom?.Sku ?? "—")</td>
+                                                    <td>@(nom?.Gost ?? "—")</td>
+                                                    <td><strong>@item.Quantity</strong></td>
+                                                    <td>@nom?.Unit</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Итого -->
+
+        <div class="alert alert-info mt-3">
+            <strong>Всего записей:</strong> @writeOffs.Count <br/>
+            @if (dateForm is not null && dateTo is not null)
+            {
+                @if (dateForm.HasValue || dateTo.HasValue || selectedMasterId > 0)
+                {
+                    <span class="text-muted">Применены фильтры</span>
+                }
+            }
+        </div>
+
+}
+
+
+
+@code {
+    // Фильтры
+    private DateTime? dateForm;
+    private DateTime? dateTo;
+    private int selectedMasterId;
+
+    // Данные
+    private List<MaterialWriteOff>? writeOffs;
+    private List<UserAccountModel>? masters = new();
+
+    // Состояние UI
+    private bool isLoading;
+    private int? expandedWriteOffId;
+    private string? errorMessage;
+
+    protected async override Task OnInitializedAsync()
+    {
+        await LoadMastersAsync();
+        await LoadHistoryAsync();
+    }
+
+    private async Task LoadMastersAsync()
+    {
+        masters = (await ViewUsersAccountByNameUseCase.ExecuteAsync()).ToList();
+    }
+
+    private async Task LoadHistoryAsync()
+    {
+        isLoading = true;
+        StateHasChanged();
+        try
+        {
+            writeOffs = (await ViewWriteOffHistoryUseCase.ExecuteAsync(
+                selectedMasterId > 0? selectedMasterId : null, 
+                dateForm?.Date, 
+                dateTo?.Date.AddDays(1))
+            ).ToList();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ResetFilters()
+    {
+        dateForm = null;
+        dateTo = null;
+        selectedMasterId = 0;
+        await LoadHistoryAsync();
+    }
+
+    private void ToggleDetails(int writeOffId)
+    {
+        expandedWriteOffId = expandedWriteOffId == writeOffId ? null : writeOffId;
+    }
+}

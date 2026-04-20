@@ -7,13 +7,6 @@
 @inject IAddWriteOffUseCase AddWriteOffUseCase
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
-<AuthorizeView>
-    <Authorized>
-        <p>@context.User.Identity.Name</p>
-        <p>@currentMasterId</p>
-    </Authorized>
-</AuthorizeView>
-
 <h3>Списание материалов</h3>
 
 <!-- Сообщения об успехе/ошибке -->
@@ -32,90 +25,93 @@
         <button type="button" class="btn-close" @onclick="() => errorMessage = null"></button>
     </div>
 }
+<div class="card h-100">
+    <div class="card-body p-10" style="max-height: 60vh; overflow-y: auto;">
+        <!-- Причина списания -->
+        <div class="mb-3">
+            <label class="form-label">Причина списания</label>
+            <textarea @bind="reason" class="form-control" rows="3"
+                      placeholder="Например: ремонт ВЛ-0.4кВ, ул.Ленина, опора №5"></textarea>
+        </div>
 
-<!-- Причина списания -->
-<div class="mb-3">
-    <label class="form-label">Причина списания</label>
-    <textarea @bind="reason" class="form-control" rows="3"
-              placeholder="Например: ремонт ВЛ-0.4кВ, ул.Ленина, опора №5"></textarea>
-</div>
 
+        <!-- Динамический список материалов -->
+        <h5 class="mt-4">Материалы для списания:</h5>
 
-<!-- Динамический список материалов -->
-<h5 class="mt-4">Материалы для списания:</h5>
-
-@foreach (var (item, index) in items.Select((value, i) => (value, i)))
-{
-    <div class="card mb-2">
-        <div class="card-body">
-            <div class="row g-2 align-items-center">
+        @foreach (var (item, index) in items.Select((value, i) => (value, i)))
+        {
+            <div class="card mb-2">
+                <div class="card-body">
+                    <div class="row g-2 align-items-center">
                 
-                <!-- Каскадный выбор материала -->
-                <div class="col-md-5">
-                    <label class="form-label small">Материал #@(index + 1)</label>
+                        <!-- Каскадный выбор материала -->
+                        <div class="col-md-5">
+                            <label class="form-label small">Материал #@(index + 1)</label>
 
-                    <!-- Категория -->
-                    <InputSelect @bind-Value="item.CategoryId" @bind-Value:after="() => OnCategoryChanged(index)" 
-                        class="form-select form-select-sm mb-1">
-                        <option value="0">-- Категория --</option>
-                        @foreach (var category in categories)
-                        {
-                            <option value="@category.Id">@category.Name</option>    
-                        }
-                    </InputSelect>
+                            <!-- Категория -->
+                            <InputSelect @bind-Value="item.CategoryId" @bind-Value:after="() => OnCategoryChanged(index)"
+                                         class="form-select form-select-sm mb-1">
+                                <option value="0">-- Категория --</option>
+                                @foreach (var category in categories)
+                                {
+                                    <option value="@category.Id">@category.Name</option>
+                                }
+                            </InputSelect>
 
-                    <!-- Подкатегория -->
-                    <InputSelect @bind-Value="item.SubcategoryId" @bind-Value:after="() => OnSubcategoryChanged(index)" 
-                                 class="form-select form-select-sm mb-1" disabled="@(item.CategoryId == 0)">
-                        <option value="0">-- Подкатегория --</option>
-                        @foreach (var subcategory in GetFileredSubcategories(item.CategoryId))
-                        {
-                            <option value="@subcategory.Id">@subcategory.Name</option>
-                        }
-                    </InputSelect>
+                            <!-- Подкатегория -->
+                            <InputSelect @bind-Value="item.SubcategoryId" @bind-Value:after="() => OnSubcategoryChanged(index)"
+                                         class="form-select form-select-sm mb-1" disabled="@(item.CategoryId == 0)">
+                                <option value="0">-- Подкатегория --</option>
+                                @foreach (var subcategory in GetFileredSubcategories(item.CategoryId))
+                                {
+                                    <option value="@subcategory.Id">@subcategory.Name</option>
+                                }
+                            </InputSelect>
 
-                    <!-- Тип -->
-                    <InputSelect @bind-Value="item.TypeId" @bind-Value:after="() => OnTypeChanged(index)"
-                                 class="form-select form-select-sm mb-1" disabled="@(item.SubcategoryId == 0)">
-                        <option value="0">-- Тип --</option>
-                        @foreach (var type in GetFilteredTypes(item.SubcategoryId))
-                        {
-                            <option value="@type.Id">@type.Name</option>
-                        }
-                    </InputSelect>
+                            <!-- Тип -->
+                            <InputSelect @bind-Value="item.TypeId" @bind-Value:after="() => OnTypeChanged(index)"
+                                         class="form-select form-select-sm mb-1" disabled="@(item.SubcategoryId == 0)">
+                                <option value="0">-- Тип --</option>
+                                @foreach (var type in GetFilteredTypes(item.SubcategoryId))
+                                {
+                                    <option value="@type.Id">@type.Name</option>
+                                }
+                            </InputSelect>
 
-                    <!-- Номенклатура -->
-                    <InputSelect @bind-Value="item.NomenclatureId" class="form-select form-select-sm"
-                                 disabled="@(item.TypeId == 0)">
-                        <option value="0">-- Материал --</option>
-                        @foreach (var nomenclature in GetFilteredNomenclatures(item.TypeId))
-                        {
-                            <option value="@nomenclature.Id">
-                                @nomenclature.Name @(nomenclature.Sku is not null ? $"({nomenclature.Sku})" : "")
-                            </option>    
-                        }
-                    </InputSelect>
-                </div>
+                            <!-- Номенклатура -->
+                            <InputSelect @bind-Value="item.NomenclatureId" class="form-select form-select-sm"
+                                         disabled="@(item.TypeId == 0)">
+                                <option value="0">-- Материал --</option>
+                                @foreach (var nomenclature in GetFilteredNomenclatures(item.TypeId))
+                                {
+                                    <option value="@nomenclature.Id">
+                                        @nomenclature.Name @(nomenclature.Sku is not null ? $"({nomenclature.Sku})" : "")
+                                    </option>
+                                }
+                            </InputSelect>
+                        </div>
 
-                <!-- Количество -->
-                <div class="col-md-3">
-                    <label class="form-label small">Количество</label>
-                    <InputNumber @bind-Value="item.Quantity" class="form-control form-control-sm"
-                                 placeholder="0" min="1" step="any" />
-                    <small class="text-muted">@GetUnit(item.NomenclatureId)</small>
-                </div>
+                        <!-- Количество -->
+                        <div class="col-md-3">
+                            <label class="form-label small">Количество</label>
+                            <InputNumber @bind-Value="item.Quantity" class="form-control form-control-sm"
+                                         placeholder="0" min="1" step="any" />
+                            <small class="text-muted">@GetUnit(item.NomenclatureId)</small>
+                        </div>
 
-                <!-- Удалить строку -->
-                <div>
-                    <button class="btn btn-sm btn-danger w-100" @onclick="() => RemoveItem(index)">
-                        Удалить
-                    </button>
+                        <!-- Удалить строку -->
+                        <div>
+                            <button class="btn btn-sm btn-danger w-100" @onclick="() => RemoveItem(index)">
+                                Удалить
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </div>
+        }
     </div>
-}
-
+</div>
+<br/>
 <!-- Добавить строку -->
 <button class="btn btn-outline-secondary btn-sm" @onclick="AddItem">
    + Добавить материал

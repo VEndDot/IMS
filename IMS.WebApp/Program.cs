@@ -90,6 +90,7 @@ builder.Services.AddTransient<IAddMaterialNomenclatureUseCase, AddMaterialNomenc
 builder.Services.AddTransient<IViewMaterialNomenclatureUseCase, ViewMaterialNomenclatureUseCase>();
 // WriteOff services
 builder.Services.AddTransient<IAddWriteOffUseCase, AddWriteOffUseCase>();
+builder.Services.AddTransient<IViewWriteOffHistoryUseCase, ViewWriteOffHistoryUseCase>();
 
 var app = builder.Build();
 

@@ -1,5 +1,6 @@
 ﻿using IMS.CoreBusiness.Entities;
 using IMS.UseCases.PluginInterfaces;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -75,6 +76,36 @@ namespace IMS.Plugins.EFCore.Data
                 throw;
             }
 
+        }
+
+        public async Task<IEnumerable<MaterialWriteOff>> GetWriteOffHistoryAsync(int? masterId, DateTime? dateFrom, DateTime? dateTo)
+        {
+            var query = this.db.materialWriteOffs
+                .Include(w => w.Master) // кто списал
+                .Include(w => w.Items)  // строки списания
+                    .ThenInclude(i => i.Nomenclature) // какой материал
+                        .ThenInclude(n => n.Type) // Тип материала
+                            .ThenInclude(t => t.Subcategory) // Подкатегория
+                                .ThenInclude(s => s.Category) // категория
+                .AsQueryable();
+
+            if (masterId.HasValue)
+            {
+                query = query.Where(w => w.MasterId == masterId.Value);
+            }
+
+            if (dateFrom.HasValue)
+            {
+                query = query.Where(w => w.WriteOffDate >= dateFrom.Value.Date);
+            }
+
+            if (dateTo.HasValue)
+            {
+                query = query.Where(w => w.WriteOffDate < dateTo.Value.Date.AddDays(1));
+            }
+
+            // сортируем, новые записи вверху. Данные для чтения
+            return await query.AsNoTracking().OrderByDescending(w => w.WriteOffDate).ToListAsync();
         }
     }
 }
