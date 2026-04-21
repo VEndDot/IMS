@@ -5,6 +5,7 @@
 @inject IViewSubcategoryByIdCategoryUseCase ViewSubcategoryByIdCategoryUseCase
 @inject IViewMaterialTypesByIdSubcategoryUseCase ViewMaterialTypesByIdSubcategoryUseCase
 @inject IAddMaterialNomenclatureUseCase AddMaterialNomenclatureUseCase
+@attribute [Authorize(Roles = "admin")]
 
 <h3>Создать материал (Номенклатура)</h3>
 
@@ -109,6 +110,7 @@ else if (materialNomenclature is not null)
                 <tr><td>Ед. изм.</td><td>@materialNomenclature.Unit</td></tr>
                 <tr><td>Остаток</td><td>@materialNomenclature.CurrentStock</td></tr>
                 <tr><td>Тип</td><td>@(materialType?.Name ?? "—")</td></tr>
+                <tr><td>Описание</td><td>@(materialType?.Description ?? "—")</td></tr>
                 <tr><td>Подкатегория</td><td>@(subcategory?.Name ?? "—")</td></tr>
                 <tr><td>Категория</td><td>@(category?.Name ?? "—")</td></tr>
             </tbody>

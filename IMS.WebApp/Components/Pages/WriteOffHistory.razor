@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 @inject IViewUsersAccountByNameUseCase ViewUsersAccountByNameUseCase
 @inject IViewWriteOffHistoryUseCase ViewWriteOffHistoryUseCase
+@attribute [Authorize(Roles = "admin")]
 
 @using UserAccountModel = IMS.CoreBusiness.Entities.UserAccount
 

@@ -7,71 +7,87 @@
 @inject IViewSubcategoryUseCase ViewSubcategoryUseCase
 @inject IViewMaterialTypesByIdSubcategoryUseCase ViewMaterialTypesByIdSubcategoryUseCase
 @inject IDeleteMaterialTypeUseCase DeleteMaterialTypeUseCase
+@attribute [Authorize(Roles = "admin")]
 
-@if (categories is not null)
-{
-    <InputSelect @bind-Value="categoryId" @bind-Value:after="OnCategoryChanged">
-        @foreach (var category in categories)
+<div div class="row g-3 mb-4">
+    <div class="col-md-6 col-lg-4">
+    @if (categories is not null)
+    {
+        <label class="form-label">Категория</label>
+        <InputSelect class="form-select" @bind-Value="categoryId" @bind-Value:after="OnCategoryChanged">
+            @foreach (var category in categories)
+            {
+                <option value="@category.Id">@category.Name</option>
+            }
+        </InputSelect>
+    }
+    </div>
+
+    <div class="col-md-6 col-lg-4">
+        @if (subcategories is not null)
         {
-            <option value="@category.Id">@category.Name</option>    
+            <label class="form-label">Подкатегория</label>
+            <InputSelect class="form-select" @bind-Value="subcategoryId" @bind-Value:after="OnSubcategoryChanged">
+                @foreach (var subcategory in subcategories)
+                {
+                    <option value="@subcategory.Id">@subcategory.Name</option>
+                }
+            </InputSelect>
         }
-    </InputSelect>
-}
-<p>Категория: @categoryId</p>
+    </div>
+</div>
 
-@if (subcategories is not null)
-{
-    <InputSelect @bind-Value="subcategoryId" @bind-Value:after="OnSubcategoryChanged">
-        @foreach (var subcategory in subcategories)
-        {
-            <option value="@subcategory.Id">@subcategory.Name</option>
-        }
-    </InputSelect>
-}
-
-<p>Подкатегория: @subcategoryId</p>
 
 <h3>Список типов номенклатуры</h3>
-@if (materialTypes is not null)
-{
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Id</th>
-                <th>Название типа</th>
-                <th>Описание</th>
-                <th>Id-Подкатегории</th>
-                <th>Подкатегория</th>
-                <th>Id-Категории</th>
-                <th>Категория</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var mType in materialTypes)
-            {
-                <tr>
-                    <td>@mType.Id</td>
-                    <td>@mType.Name</td>
-                    <td>@mType.Description</td>
-                    <td>@mType.SubcategoryId</td>
-                    <td>@mType.Subcategory?.Name</td>
-                    <td>@mType.Subcategory?.CategoryId</td>
-                    <td>@mType.Subcategory?.Category?.Name</td>
-                    <td><button @onclick="@(()=>OnClickEdit(mType.Id))" class="btn btn-link">Изменить</button></td>
-                    <td><button @onclick="@(()=>OnClickDelete(mType.Id))" class="btn btn-link">Удалить</button></td>
-                </tr>
-            }
-        </tbody>
+<div class="card h-100">
+    <div class="card-body p-10" style="max-height: 60vh; overflow-y: auto;">
+        @if (materialTypes is not null)
+        {
+            <table class="table table-striped table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Id</th>
+                        <th>Название типа</th>
+                        <th>Описание</th>
+                        <th>Id-Подкатегории</th>
+                        <th>Подкатегория</th>
+                        <th>Id-Категории</th>
+                        <th>Категория</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var mType in materialTypes)
+                    {
+                        <tr>
+                            <td>@mType.Id</td>
+                            <td>@mType.Name</td>
+                            <td>@mType.Description</td>
+                            <td>@mType.SubcategoryId</td>
+                            <td>@mType.Subcategory?.Name</td>
+                            <td>@mType.Subcategory?.CategoryId</td>
+                            <td>@mType.Subcategory?.Category?.Name</td>
+                            <td><button @onclick="@(() => OnClickEdit(mType.Id))" class="btn btn-link">Изменить</button></td>
+                            <td><button @onclick="@(() => OnClickDelete(mType.Id))" class="btn btn-link">Удалить</button></td>
+                        </tr>
+                    }
+                </tbody>
 
-    </table>
-}
+            </table>
+        }
+    </div>
+</div>
 
 @if (!string.IsNullOrWhiteSpace(errorMessage))
 {
     <div class="alert alert-danger">@errorMessage</div>
 }
+<br />
+<div class="mb-3">
+    <button type="button" class="btn btn-success" @onclick="OnClickAddType">
+        <i class="fas fa-plus"></i> Добавить тип номенклатуры
+    </button>
+</div>
 
-<button type="button" @onclick="OnClickAddType">Добавить тип номенклатуры</button>
 @code {
 
     private List<MaterialType>? materialTypes;

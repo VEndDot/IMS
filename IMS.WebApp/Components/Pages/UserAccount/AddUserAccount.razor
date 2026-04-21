@@ -3,8 +3,11 @@
 @inject IAddUserAccountUseCase AddUserAccountUseCase
 @inject NavigationManager navigationManager
 @inject IJSRuntime JS
+@attribute [Authorize(Roles = "admin")]
+
 <h3>Добавить нового пользователя в систему</h3>
 <br />
+
 
 @if (userAccount is not null)
 {

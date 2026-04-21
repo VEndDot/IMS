@@ -4,7 +4,7 @@
 @inject IViewWriteOffHistoryUseCase ViewWriteOffHistoryUseCase
 @inject IJSRuntime JSRuntime
 @using UserAccountModel = IMS.CoreBusiness.Entities.UserAccount
-
+@attribute [Authorize(Roles = "admin, user")]
 
 <h3>Спики материалов для работ</h3>
 

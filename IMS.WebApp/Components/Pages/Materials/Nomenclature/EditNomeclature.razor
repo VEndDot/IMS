@@ -3,6 +3,7 @@
 @inject NavigationManager navigationManager
 @inject IViewMaterialNomeclatureById ViewMaterialNomeclatureById
 @inject IEditeMaterialNomenclatureUseCase EditeMaterialNomenclatureUseCase
+@attribute [Authorize(Roles = "admin")]
 
 <h3>Редактировать материал</h3>
 

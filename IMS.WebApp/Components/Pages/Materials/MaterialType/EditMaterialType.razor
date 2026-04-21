@@ -5,6 +5,7 @@
 @inject NavigationManager navigationManager
 @inject IViewMaterialTypeByIdUseCase ViewMaterialTypeByIdUseCase
 @inject IEditeMaterialTypeUseCase EditeMaterialTypeUseCase
+@attribute [Authorize(Roles = "admin")]
 
 @if (materialType is not null)
 {

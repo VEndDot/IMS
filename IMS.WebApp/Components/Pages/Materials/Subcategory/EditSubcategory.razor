@@ -4,6 +4,8 @@
 @inject IViewSubcategoryByIdUseCase ViewSubcategoryByIdUseCase
 @inject IViewCategoryByIdUseCase ViewCategoryByIdUseCase
 @inject IEditSubcategoryUseCase EditSubcategoryUseCase
+@attribute [Authorize(Roles = "admin")]
+
 <h3>Изменить подкатегорию</h3>
 
 @if (errorMessage is not null)

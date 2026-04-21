@@ -1,24 +1,50 @@
 ﻿@inherits LayoutComponentBase
 
 <div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+    <!-- ОСНОВНОЙ КОНТЕНТ -->
+    <main class="main-content">
+        <!-- ВЕРХНЕЕ МЕНЮ -->
+        <header class="top-menu sticky-top bg-dark shadow-sm">
+            <nav class="navbar navbar-expand-lg navbar-dark">
+                <div class="container-fluid">
+                
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainMenu" aria-controls="mainMenu" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    
+                    <div class="collapse navbar-collapse" id="mainMenu">
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">Узнать больше</a>
-            <AuthorizeView>
-                <NotAuthorized>
-                    <a href="/login">Войти в систему</a>
-                </NotAuthorized>
-                <Authorized>
-                    <a href="/logout">Выйти из системы</a>
-                </Authorized>
-            </AuthorizeView>
-        </div>
+                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                            <li class="nav-item"><NavLink class="nav-link" href="" Match="NavLinkMatch.All">Управление запасами</NavLink></li>
 
-        <article class="content px-4">
+                            <AuthorizeView Roles="admin">
+                                <Authorized >
+                                    <li class="nav-item"><NavLink class="nav-link" href="users">Пользователи</NavLink></li>
+                                    <li class="nav-item"><NavLink class="nav-link" href="category">Категории</NavLink></li>
+                                    <li class="nav-item"><NavLink class="nav-link" href="subcategory">Подкатегории</NavLink></li>
+                                    <li class="nav-item"><NavLink class="nav-link" href="type">Тип</NavLink></li>
+                                    <li class="nav-item"><NavLink class="nav-link" href="material">Материал(Номенклатура)</NavLink></li>
+                                    <li class="nav-item"><NavLink class="nav-link" href="history">История списаний</NavLink></li>
+                                    <li class="nav-item"><NavLink class="nav-link" href="condition">Состояние материалов</NavLink></li>
+                                </Authorized>
+                            </AuthorizeView>
+                            <AuthorizeView Roles="admin, user">
+                                <li class="nav-item"><NavLink class="nav-link" href="writeoff">Списания</NavLink></li>
+                                <li class="nav-item"><NavLink class="nav-link" href="listmaterialsforwork">Списки материалов</NavLink></li>
+                            </AuthorizeView>
+                        </ul>
+
+                        <!-- Авторизация справа -->
+                        <AuthorizeView>
+                            <NotAuthorized><a href="/login" class="btn btn-outline-light btn-sm">Войти в систему</a></NotAuthorized>
+                            <Authorized><a href="/logout" class="btn btn-outline-light btn-sm">Выйти из системы</a></Authorized>
+                        </AuthorizeView>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <article class="content">
             @Body
         </article>
     </main>
@@ -29,3 +55,14 @@
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
+
+<style>
+    .navbar-nav .nav-link {
+        padding: 0.5rem 1rem;
+        white-space: nowrap;
+    }
+    
+    .main-content {
+        min-height: calc(100vh - 56px);
+    }
+</style>

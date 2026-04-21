@@ -6,6 +6,7 @@
 @inject IViewMaterialNomenclatureUseCase ViewMaterialNomenclatureUseCase
 @inject IAddWriteOffUseCase AddWriteOffUseCase
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@attribute [Authorize(Roles = "admin, user")]
 
 <h3>Списание материалов</h3>
 

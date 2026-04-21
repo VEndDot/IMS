@@ -6,6 +6,7 @@
 @inject IAddMaterialTypeUseCase AddMaterialTypeUseCase
 @inject IViewCategoryByNameUseCase ViewCategoryByNameUseCase
 @inject IViewSubcategoryByIdCategoryUseCase ViewSubcategoryByIdCategoryUseCase
+@attribute [Authorize(Roles = "admin")]
 
 <h3>Добавить тип номенклатуры</h3>
 
