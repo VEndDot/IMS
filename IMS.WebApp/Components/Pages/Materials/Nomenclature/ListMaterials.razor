@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 @inject NavigationManager navigationManager
 @inject IViewMaterialNomenclatureUseCase ViewMaterialNomenclatureUseCase
+@inject IDeleteMaterialNomenclatureUseCase DeleteMaterialNomenclatureUseCase
 
 <h3>Список материалов (Номенклатура)</h3>
 
@@ -11,18 +12,48 @@
 
 @if (materialNomenclatures is not null)
 {
-    @foreach (var material in materialNomenclatures)
-    {
-        <p>@material.Name @material.CurrentStock</p>    
-    }
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Имя</th>
+                <th>Ариткул</th>
+                <th>Сечение</th>
+                <th>Текущий остаток</th>
+                <th>Единица измерения</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var material in materialNomenclatures)
+            {
+                <tr>
+                    <td>@material.Name</td>
+                    <td>@material.Sku</td>
+                    <td>@material.CrossSection</td>
+                    <td>@material.CurrentStock</td>
+                    <td>@material.Unit</td>
+                    <td><button type="button" class="btn btn-link" @onclick="@(() => OnClickEdite(material.Id))">Редактировать</button></td>
+                    <td><button type="button" class="btn btn-link" @onclick="@(() => OnClickDelete(material.Id))">Удалить материал</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+}
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-warning">@errorMessage</div>
 }
 
 <button type="button" @onclick="OnClickAddMaterial">Добавить материал</button>
+
 
 @code {
 
     private List<MaterialNomenclature>? materialNomenclatures;
     private string? searchMaterial;
+
+    private string? errorMessage;
 
     protected async override Task OnInitializedAsync()
     {
@@ -37,5 +68,23 @@
     private void OnClickAddMaterial()
     {
         navigationManager.NavigateTo("/addmaterial");
+    }
+
+    private async Task OnClickEdite(int materialId)
+    {
+        navigationManager.NavigateTo($"/editmaterial/{materialId}");
+    }
+
+    private async Task OnClickDelete(int materialId)
+    {
+        try
+        {
+            await DeleteMaterialNomenclatureUseCase.ExecuteAsync(materialId);
+            materialNomenclatures = (await ViewMaterialNomenclatureUseCase.ExecuteAsync()).ToList();
+        }
+        catch(Exception e)
+        {
+            errorMessage = e.Message;
+        }
     }
 }

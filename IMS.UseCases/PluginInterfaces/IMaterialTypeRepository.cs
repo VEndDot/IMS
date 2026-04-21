@@ -9,8 +9,14 @@ namespace IMS.UseCases.PluginInterfaces
     {
         Task AddMaterialTypeAsync(MaterialType materialType);
 
+        Task UpdateMaterialTypeAsync(MaterialType materialType);
+
+        Task DeleteMaterialTypeAsync(int materialTypeId);
+
         Task<IEnumerable<MaterialType>> GetMaterialTypeByNameAsync(string name);
 
         Task<IEnumerable<MaterialType>> GetMaterialTypesByIdSubcategoryAsync(int subcategoryId);
+
+        Task<MaterialType?> GetMaterialTypeById(int materialId);
     }
 }

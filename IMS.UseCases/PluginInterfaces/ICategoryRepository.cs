@@ -12,5 +12,9 @@ namespace IMS.UseCases.PluginInterfaces
         Task<Category?> GetCategoriesByIdAsync(int categoryId);
 
         Task AddCategoryAsync(Category category);
+
+        Task UpdateCategoryAsync(Category category);
+
+        Task DeleteCategoryAsync(int categoryId);
     }
 }

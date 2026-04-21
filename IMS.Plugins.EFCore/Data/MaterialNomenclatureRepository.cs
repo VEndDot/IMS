@@ -34,6 +34,31 @@ namespace IMS.Plugins.EFCore.Data
             await this.db.SaveChangesAsync();
         }
 
+        public async Task DeleteMaterialAsync(int materialId)
+        {
+            // 1. Проверяем, используется ли материал в списаниях
+            var isUsed = await this.db.MaterialWriteOffItems
+                .AnyAsync(i => i.NomenclatureId == materialId);
+
+            if (isUsed)
+            {
+                throw new InvalidOperationException(
+                    $"Невозможно удалить материал: он уже использовался в списаниях.");
+            }
+
+            // 2. Находим и удаляем
+            var material = await this.db.materialNomenclatures
+                .FirstOrDefaultAsync(m => m.Id == materialId);
+
+            if (material == null)
+            {
+                throw new InvalidOperationException($"Материал с ID {materialId} не найден");
+            }
+
+            this.db.materialNomenclatures.Remove(material);
+            await this.db.SaveChangesAsync();
+        }
+
         public async Task<IEnumerable<MaterialNomenclature>> GetMaterialNomenclature(string searchTerm = "")
         {
             var query = this.db.materialNomenclatures
@@ -64,6 +89,41 @@ namespace IMS.Plugins.EFCore.Data
                 .AsNoTracking()          // Оптимизация: если данные только для чтения
                 .OrderBy(mn => mn.Name)  // Сортировка для предсказуемого результата
                 .ToListAsync();
+        }
+
+        public async Task<MaterialNomenclature?> GetMaterialNomenclatureById(int materialId)
+        {
+            return await this.db.materialNomenclatures
+                .Include(m => m.Type)
+                    .ThenInclude(t => t.Subcategory)
+                        .ThenInclude(s => s.Category)
+                .FirstOrDefaultAsync(m => m.Id == materialId);
+        }
+
+        public async Task UpdateMaterialNomeclatureAsync(MaterialNomenclature material)
+        {
+            var existing = await this.db.materialNomenclatures
+                .FirstOrDefaultAsync(m => m.Id == material.Id);
+
+            if (existing == null)
+            {
+                throw new InvalidOperationException($"Материал с ID {material.Id} не найден");
+            }
+
+            // Обновление редактируемых полей
+            existing.Name = material.Name;
+            existing.Sku = material.Sku;
+            existing.Gost = material.Gost;
+            existing.CrossSection = material.CrossSection;
+            existing.Unit = material.Unit;
+            existing.CurrentStock = material.CurrentStock;
+
+            if (material.TypeId > 0 && material.TypeId != existing.TypeId)
+            { 
+                existing.TypeId = material.TypeId;
+            }
+
+            await this.db.SaveChangesAsync();
         }
     }
 }

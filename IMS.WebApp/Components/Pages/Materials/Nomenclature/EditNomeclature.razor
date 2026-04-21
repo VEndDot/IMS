@@ -1,0 +1,124 @@
+﻿@page "/editmaterial/{id:int}"
+@rendermode InteractiveServer
+@inject NavigationManager navigationManager
+@inject IViewMaterialNomeclatureById ViewMaterialNomeclatureById
+@inject IEditeMaterialNomenclatureUseCase EditeMaterialNomenclatureUseCase
+
+<h3>Редактировать материал</h3>
+
+@if (errorMessage is not null)
+{
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+}
+
+@if (isLoading)
+{
+    <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Загрузка...</span></div>
+}
+else if (material is null)
+{
+    <div class="alert alert-warning">Материал не найден</div>
+}
+else
+{
+    <EditForm Model="material" OnValidSubmit="OnValidSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <!-- Только редактируемые поля -->
+        <div class="form-group mb-3">
+            <label>Название</label>
+            <InputText class="form-control" @bind-Value="material.Name" />
+            <ValidationMessage For="@(() => material.Name)" />
+        </div>
+
+        <div class="form-group mb-3">
+            <label>Артикул</label>
+            <InputText class="form-control" @bind-Value="material.Sku" />
+            <ValidationMessage For="@(() => material.Sku)" />
+        </div>
+
+        <div class="form-group mb-3">
+            <label>ГОСТ</label>
+            <InputText class="form-control" @bind-Value="material.Gost" />
+            <ValidationMessage For="@(() => material.Gost)" />
+        </div>
+
+        <div class="form-group mb-3">
+            <label>Сечение</label>
+            <InputNumber class="form-control" @bind-Value="material.CrossSection" />
+            <ValidationMessage For="@(() => material.CrossSection)" />
+        </div>
+
+        <div class="form-group mb-3">
+            <label>Ед. изм.</label>
+            <InputText class="form-control" @bind-Value="material.Unit" />
+            <ValidationMessage For="@(() => material.Unit)" />
+        </div>
+
+        <div class="form-group mb-3">
+            <label>Остаток</label>
+            <InputNumber class="form-control" @bind-Value="material.CurrentStock" />
+            <ValidationMessage For="@(() => material.CurrentStock)" />
+        </div>
+
+        <!-- Отображение иерархии (только для информации) -->
+        <div class="alert alert-info mb-3">
+            <small>
+                <strong>Категория:</strong> @(material.Type?.Subcategory?.Category?.Name ?? "—")<br />
+                <strong>Подкатегория:</strong> @(material.Type?.Subcategory?.Name ?? "—")<br />
+                <strong>Тип:</strong> @(material.Type?.Name ?? "—")
+            </small>
+        </div>
+
+        <button type="submit" class="btn btn-success">Сохранить</button>
+        <button type="button" class="btn btn-secondary ms-2" @onclick="OnCancel">Отмена</button>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+    private MaterialNomenclature? material;
+    private bool isLoading = true;
+    private string? errorMessage;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            material = await ViewMaterialNomeclatureById.ExecuteAsync(Id);
+            if (material == null)
+            {
+                isLoading = false;
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Ошибка загрузки: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged(); 
+        }
+    }
+
+    private async Task OnValidSubmit()
+    {
+        try
+        {
+            if (material == null) return;
+            
+            await EditeMaterialNomenclatureUseCase.ExecuteAsync(material);
+            navigationManager.NavigateTo("/material");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Ошибка обновления: {ex.Message}";
+            StateHasChanged();
+        }
+    }
+
+    private void OnCancel() => navigationManager.NavigateTo("/material");
+}

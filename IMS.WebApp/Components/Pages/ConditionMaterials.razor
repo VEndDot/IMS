@@ -1,0 +1,67 @@
+﻿@page "/condition"
+@rendermode InteractiveServer
+@inject NavigationManager navigationManager
+@inject IViewMaterialNomenclatureUseCase ViewMaterialNomenclatureUseCase
+<h3>Состояние материалов</h3>
+
+@if (nomenclatures is not null)
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>Наименование</th>
+                    <th>Единица</th>
+                    <th>Текущие остатки</th>
+                    <th>Статус</th>
+                    <th>Посмотреть материал</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var material in nomenclatures)
+                {
+                    <tr class="@GetRowCssClass(material)">
+                        <td>@material.Name</td>
+                        <td>@material.Unit</td>
+                        <td>@material.CurrentStock</td>
+                        <td>@GetStatusText(material)</td>
+                        <td><button type="button" @onclick="@(() => OnClickEdit(material.Id))" class="btn btn-link">Перейти к материалу</button></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+}
+
+@code {
+    private const decimal unitPieces = 20;
+
+    private const decimal unitMeters = 200;
+
+    private List<MaterialNomenclature>? nomenclatures;
+
+    protected async override Task OnInitializedAsync()
+    {
+        nomenclatures = (await ViewMaterialNomenclatureUseCase.ExecuteAsync()).ToList();
+    }
+
+    private string GetRowCssClass(MaterialNomenclature material)
+    {
+        bool isLowStock = material.Unit == "м" && material.CurrentStock < unitMeters ||
+                          material.Unit == "шт" && material.CurrentStock < unitPieces;
+        return isLowStock ? "table-danger" : "table-success";
+    }
+
+    private string GetStatusText(MaterialNomenclature material)
+    {
+        bool isLowStock = material.Unit == "м" && material.CurrentStock < unitMeters ||
+                          material.Unit == "шт" && material.CurrentStock < unitPieces;
+        return isLowStock ? "Низкие остатки!" : "Остатки в порядке";
+    }
+
+    private void OnClickEdit(int materialId)
+    {
+        navigationManager.NavigateTo($"/editmaterial/{materialId}");
+    }
+}

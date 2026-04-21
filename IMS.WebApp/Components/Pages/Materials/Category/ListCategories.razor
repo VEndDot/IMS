@@ -1,11 +1,17 @@
 ﻿@page "/category"
 @inject IViewCategoryByNameUseCase ViewCategoryByNameUseCase
 @inject NavigationManager navigationManager
+@inject IDeleteCategoryUseCase DeleteCategoryUseCase
 @rendermode InteractiveServer
 
 <h3>Список категорий</h3>
 
 <ViewCategoryComponent OnSearchCategory="OnSearchCategory"></ViewCategoryComponent>
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
 
 @if(this.listCategories is not null)
 {
@@ -22,8 +28,8 @@
                 <tr>
                     <td>@category.Id</td>
                     <td>@category.Name</td>
-                    <td><button class="btn btn-link">Изменить</button></td>
-                    <td><button class="btn btn-link">Удалить</button></td>
+                    <td><button @onclick="@(()=>EditCategory(category.Id))" class="btn btn-link">Изменить</button></td>
+                    <td><button @onclick="@(() => DeleteCategory(category.Id))" class="btn btn-link">Удалить</button></td>
                 </tr>
             }
         </tbody>
@@ -35,7 +41,7 @@
 @code {
 
     private List<Category>? listCategories;
-
+    private string? errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
@@ -51,5 +57,24 @@
     private void AddCategory()
     {
         navigationManager.NavigateTo("/addcategory");
+    }
+
+    private void EditCategory(int id)
+    {
+        navigationManager.NavigateTo($"/editcategory/{id}");
+    }
+
+    private async Task DeleteCategory(int id)
+    {
+        try
+        {
+            await DeleteCategoryUseCase.ExecuteAsync(id);
+            listCategories = (await ViewCategoryByNameUseCase.ExecuteAsync()).ToList();
+            errorMessage = "";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
     }
 }

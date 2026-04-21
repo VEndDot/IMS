@@ -3,6 +3,8 @@
 @inject NavigationManager navigationManager
 @inject IViewSubcategoryUseCase ViewSubcategoryUseCase
 @inject IViewCategoryByNameUseCase ViewCategoryByNameUseCase
+@inject IDeleteSubcategoryUseCase DeleteSubcategoryUseCase
+
 <h3>Список подкатегорий</h3>
 
 @if (categories is not null)
@@ -41,14 +43,17 @@
                     <td>@subcategory.Id</td>
                     <td>@subcategory.Name</td>
                     <td>@subcategory.Category?.Name</td>
-                    <td><button class="btn btn-link">Изменить</button></td>
-                    <td><button class="btn btn-link">Удалить</button></td>
+                    <td><button @onclick="@(()=>OnClickEdit(subcategory.Id))" class="btn btn-link">Изменить</button></td>
+                    <td><button @onclick="@(()=>OnClickDelete(subcategory.Id))" class="btn btn-link">Удалить</button></td>
                 </tr>
             }
         </tbody>
     </table>
 }
-
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
 
 <button type="button" class="btn btn-info" @onclick="AddSubcategory">Добавить подкатегорию</button>
 
@@ -58,6 +63,8 @@
     private List<Category>? categories;
     private string? categoryName;
     private string? stringForSearch;
+
+    private string? errorMessage;
 
     protected async override Task OnInitializedAsync()
     {
@@ -88,5 +95,26 @@
     private void AddSubcategory()
     {
         navigationManager.NavigateTo("/addsubcategory");
+    }
+
+    private async Task OnClickEdit(int subcategoryId)
+    {
+        navigationManager.NavigateTo($"/editsubcategoy/{subcategoryId}");
+    }
+
+    private async Task OnClickDelete(int subcategoryId)
+    {
+        try
+        {
+            await DeleteSubcategoryUseCase.ExecuteAsync(subcategoryId);
+            subcategories = (await ViewSubcategoryUseCase.ExecuteAsync()).ToList();
+            categories = (await ViewCategoryByNameUseCase.ExecuteAsync()).ToList();
+            errorMessage = "";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+
     }
 }

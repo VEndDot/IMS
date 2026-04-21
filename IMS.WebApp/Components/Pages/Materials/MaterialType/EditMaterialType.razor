@@ -1,0 +1,115 @@
+﻿@page "/editType/{id:int}"
+<h3>Изменить тип материала</h3>
+
+@rendermode InteractiveServer
+@inject NavigationManager navigationManager
+@inject IViewMaterialTypeByIdUseCase ViewMaterialTypeByIdUseCase
+@inject IEditeMaterialTypeUseCase EditeMaterialTypeUseCase
+
+@if (materialType is not null)
+{
+    <EditForm Model="materialType" OnValidSubmit="OnValidSubmit">
+        <DataAnnotationsValidator></DataAnnotationsValidator>
+
+        <div class="form-group mb-3">
+
+            <label>Название типа</label>
+            <InputText class="form-control" @bind-Value="materialType.Name" />
+            <ValidationMessage For="@(() => materialType.Name)" />
+        </div>
+        
+        <div class="from-group mb-3">
+            <label>Описание типа</label>
+            <InputText class="form-control" @bind-Value="materialType.Description" />
+            <ValidationMessage For="@(() => materialType.Description)" />
+        </div>
+
+        <button class="btn btn-success" type="submit">Изменить</button>
+        <button class="btn btn-info" type="button" @onclick="OnClickCancel">Отмена</button>
+
+        <br />
+        <br />
+        <h3><b>Предпросмотр:</b></h3>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Тип материала</th>
+                    <th>Описание</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>@materialType.Name</td>
+                    <td>@materialType.Description</td>
+                </tr>
+            </tbody>
+        </table>
+        <br />
+        <div class="alert alert-info mb-3">
+            <small>
+                <strong>Категория:</strong> @(materialType.Subcategory?.Category?.Name ?? "—")<br />
+                <strong>Подкатегория:</strong> @(materialType.Subcategory?.Name ?? "—")<br />
+            </small>
+        </div>
+
+    </EditForm>
+}
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-warning">@errorMessage</div>
+    
+}
+
+@code {
+
+    [Parameter]
+    public int Id { get; set; }
+
+    private bool isLoading = true;
+    private MaterialType? materialType = new();
+
+    private string? errorMessage;
+
+    protected async override Task OnInitializedAsync()
+    {
+        try
+        {
+            materialType = await ViewMaterialTypeByIdUseCase.ExecuteAsync(Id);
+            if (materialType == null) { isLoading = false; return; }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Ошибка загрузки: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+
+    }
+
+    private async Task OnValidSubmit()
+    {
+        if (materialType is not null)
+        {
+            try
+            {
+                await EditeMaterialTypeUseCase.ExecuteAsync(materialType);
+                navigationManager.NavigateTo("/type");
+            }
+            catch (Exception ex)
+            {
+                errorMessage = $"Ошибка сохранения: {ex.Message}";
+            }
+        
+        }
+
+    }
+
+    private void OnClickCancel()
+    {
+        navigationManager.NavigateTo("/type");
+    }
+}

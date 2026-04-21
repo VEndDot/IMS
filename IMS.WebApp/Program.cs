@@ -76,18 +76,28 @@ builder.Services.AddTransient<IDeleteUserAccountUseCase, DeleteUserAccountUseCas
 builder.Services.AddTransient<IViewCategoryByNameUseCase, ViewCategoryByNameUseCase>();
 builder.Services.AddTransient<IAddCategoryUseCase, AddCategoryUseCase>();
 builder.Services.AddTransient<IViewCategoryByIdUseCase, ViewCategoryByIdUseCase>();
+builder.Services.AddTransient<IEditeCategoryUseCase, EditeCategoryUseCase>();
+builder.Services.AddTransient<IDeleteCategoryUseCase, DeleteCategoryUseCase>();
 // subcategory services
 builder.Services.AddTransient<IAddSubcategoryUseCase, AddSubcategoryUseCase>();
 builder.Services.AddTransient<IViewSubcategoryUseCase, ViewSubcategoryUseCase>();
 builder.Services.AddTransient<IViewSubcategoryByIdUseCase, ViewSubcategoryByIdUseCase>();
 builder.Services.AddTransient<IViewSubcategoryByIdCategoryUseCase, ViewSubcategoryByIdCategoryUseCase>();
+builder.Services.AddTransient<IEditSubcategoryUseCase, EditSubcategoryUseCase>();
+builder.Services.AddTransient<IDeleteSubcategoryUseCase, DeleteSubcategoryUseCase>();
 // Material Type services
 builder.Services.AddTransient<IViewMaterialTypeByNameUseCase, ViewMaterialTypeByNameUseCase>();
 builder.Services.AddTransient<IAddMaterialTypeUseCase, AddMaterialTypeUseCase>();
 builder.Services.AddTransient<IViewMaterialTypesByIdSubcategoryUseCase, ViewMaterialTypesByIdSubcategoryUseCase>();
+builder.Services.AddTransient<IViewMaterialTypeByIdUseCase, ViewMaterialTypeByIdUseCase>();
+builder.Services.AddTransient<IEditeMaterialTypeUseCase, EditeMaterialTypeUseCase>();
+builder.Services.AddTransient<IDeleteMaterialTypeUseCase, DeleteMaterialTypeUseCase>();
 // Material Nomenclature services
 builder.Services.AddTransient<IAddMaterialNomenclatureUseCase, AddMaterialNomenclatureUseCase>();
 builder.Services.AddTransient<IViewMaterialNomenclatureUseCase, ViewMaterialNomenclatureUseCase>();
+builder.Services.AddTransient<IViewMaterialNomeclatureById, ViewMaterialNomeclatureById>();
+builder.Services.AddTransient<IEditeMaterialNomenclatureUseCase, EditeMaterialNomenclatureUseCase>();
+builder.Services.AddTransient<IDeleteMaterialNomenclatureUseCase, DeleteMaterialNomenclatureUseCase>();
 // WriteOff services
 builder.Services.AddTransient<IAddWriteOffUseCase, AddWriteOffUseCase>();
 builder.Services.AddTransient<IViewWriteOffHistoryUseCase, ViewWriteOffHistoryUseCase>();

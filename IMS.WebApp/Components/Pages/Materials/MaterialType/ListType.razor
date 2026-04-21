@@ -6,6 +6,7 @@
 @inject IViewSubcategoryByIdCategoryUseCase ViewSubcategoryByIdCategoryUseCase
 @inject IViewSubcategoryUseCase ViewSubcategoryUseCase
 @inject IViewMaterialTypesByIdSubcategoryUseCase ViewMaterialTypesByIdSubcategoryUseCase
+@inject IDeleteMaterialTypeUseCase DeleteMaterialTypeUseCase
 
 @if (categories is not null)
 {
@@ -56,11 +57,18 @@
                     <td>@mType.Subcategory?.Name</td>
                     <td>@mType.Subcategory?.CategoryId</td>
                     <td>@mType.Subcategory?.Category?.Name</td>
+                    <td><button @onclick="@(()=>OnClickEdit(mType.Id))" class="btn btn-link">Изменить</button></td>
+                    <td><button @onclick="@(()=>OnClickDelete(mType.Id))" class="btn btn-link">Удалить</button></td>
                 </tr>
             }
         </tbody>
 
     </table>
+}
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
 }
 
 <button type="button" @onclick="OnClickAddType">Добавить тип номенклатуры</button>
@@ -73,6 +81,8 @@
 
     private List<Subcategory>? subcategories;
     private int subcategoryId;
+
+    private string? errorMessage;
 
     protected async override Task OnInitializedAsync()
     {
@@ -125,15 +135,39 @@
     {
         await UpdateSubcategoriesAsync();
         await UpdateMaterialTypesAsync();
+        errorMessage = "";
+
     }
 
     private async Task OnSubcategoryChanged()
     {
         await UpdateMaterialTypesAsync();    
+        errorMessage = "";
+    }
+
+    private async Task OnClickEdit(int typeId)
+    {
+        navigationManager.NavigateTo($"/editType/{typeId}");
+    }
+
+    private async Task OnClickDelete(int typeId)
+    {
+        try
+        {
+            await DeleteMaterialTypeUseCase.ExecuteAsync(typeId);
+            await UpdateSubcategoriesAsync();
+            await UpdateMaterialTypesAsync();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+
     }
 
     private void OnClickAddType()
     {
         navigationManager.NavigateTo("/addtype");
     }
+
 }

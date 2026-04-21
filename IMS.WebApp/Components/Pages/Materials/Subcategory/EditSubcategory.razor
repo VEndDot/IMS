@@ -1,0 +1,68 @@
+﻿@page "/editsubcategoy/{id:int}"
+@rendermode InteractiveServer
+@inject NavigationManager navigationManager
+@inject IViewSubcategoryByIdUseCase ViewSubcategoryByIdUseCase
+@inject IViewCategoryByIdUseCase ViewCategoryByIdUseCase
+@inject IEditSubcategoryUseCase EditSubcategoryUseCase
+<h3>Изменить подкатегорию</h3>
+
+@if (errorMessage is not null)
+{
+    <div class="alert alert-danger" role="alert">@errorMessage</div>
+}
+
+@if (this.subcategory is not null)
+{
+    <EditForm Model="subcategory" OnValidSubmit="OnValidSubmit">
+        <DataAnnotationsValidator></DataAnnotationsValidator>
+
+        <label>Введите название подкатегории</label>
+        <InputText class="form-control" @bind-Value="subcategory.Name" />
+        <ValidationMessage For="@(() => subcategory.Name)" />
+        <br />
+        <button class="btn btn-primary" type="submit">Изменить</button>
+        <button class="btn btn-light" type="button" @onclick="OnClickCancel">Отмена</button>
+    </EditForm>
+    <br />
+    <div class="alert alert-info mb-3">
+        <small>
+            <strong>Категория:</strong> @(subcategory.Category?.Name ?? "—")<br />
+        </small>
+    </div>
+}
+
+
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private Subcategory? subcategory;
+
+    private string? errorMessage;
+
+    protected async override Task OnInitializedAsync()
+    {
+        subcategory = await ViewSubcategoryByIdUseCase.ExecuteAsync(Id);
+    }
+
+    private void OnClickCancel()
+    {
+        navigationManager.NavigateTo("/subcategory");
+    }
+
+    private async Task OnValidSubmit()
+    {
+        try
+        {
+            if (subcategory == null) return;
+
+            await EditSubcategoryUseCase.ExecuteAsync(subcategory);
+            navigationManager.NavigateTo("/subcategory");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+    }
+}

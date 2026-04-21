@@ -1,6 +1,6 @@
 ﻿using IMS.CoreBusiness.Entities;
 
-namespace IMS.UseCases.WriteOffUseCases
+namespace IMS.UseCases.Interfaces.WriteOffInterfaces
 {
     public interface IViewWriteOffHistoryUseCase
     {

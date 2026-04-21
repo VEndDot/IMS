@@ -33,6 +33,35 @@ namespace IMS.Plugins.EFCore.Data
             await this.db.SaveChangesAsync();
         }
 
+        public async Task DeleteMaterialTypeAsync(int materialTypeId)
+        {
+            var hasNomenclatures = await db.materialNomenclatures
+                .AnyAsync(n => n.TypeId == materialTypeId);
+
+            if (hasNomenclatures)
+            {
+                throw new InvalidOperationException(
+                    "Невозможно удалить тип: к нему привязаны материалы. " +
+                    "Сначала удалите или перенесите материалы в другой тип.");
+            }
+
+            var type = await db.materialTypes.FindAsync(materialTypeId);
+            if (type == null)
+                throw new InvalidOperationException($"Тип с ID {materialTypeId} не найден");
+
+            db.materialTypes.Remove(type);
+            await db.SaveChangesAsync();
+        }
+
+        public async Task<MaterialType?> GetMaterialTypeById(int materialId)
+        {
+            return await this.db.materialTypes
+                .Include(t => t.Subcategory)
+                    .ThenInclude(s => s.Category)
+                .FirstOrDefaultAsync(t => t.Id == materialId);
+                
+        }
+
         public async Task<IEnumerable<MaterialType>> GetMaterialTypeByNameAsync(string name)
         {
             var query = this.db.materialTypes.Include(mt => mt.Subcategory).AsQueryable();
@@ -51,6 +80,29 @@ namespace IMS.Plugins.EFCore.Data
                 .ThenInclude(s => s!.Category)
                 .Where(mt => mt.SubcategoryId == subcategoryId)
                 .ToListAsync();
+        }
+
+        public async Task UpdateMaterialTypeAsync(MaterialType updatedType)
+        {
+            var existing = await db.materialTypes
+                .FirstOrDefaultAsync(t => t.Id == updatedType.Id);
+
+            if (existing == null)
+                throw new InvalidOperationException($"Тип с ID {updatedType.Id} не найден");
+
+            var isDuplicate = await db.materialTypes
+                .AnyAsync(t => t.Id != updatedType.Id
+                            && t.Name == updatedType.Name
+                            && t.SubcategoryId == updatedType.SubcategoryId);
+
+            if (isDuplicate)
+                throw new InvalidOperationException(
+                    $"Тип '{updatedType.Name}' уже существует в выбранной подкатегории");
+
+            existing.Name = updatedType.Name;
+            existing.Description = updatedType.Description;
+
+            await db.SaveChangesAsync();
         }
     }
 }

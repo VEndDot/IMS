@@ -1,6 +1,72 @@
 ﻿@page "/editcategory/{categoryId:int}"
-<h3>EditCategory</h3>
+@rendermode InteractiveServer
+@inject IViewCategoryByIdUseCase ViewCategoryByIdUseCase
+@inject IEditeCategoryUseCase EditeCategoryUseCase
+@inject NavigationManager navigationManager
+<h3>Изменить категорию</h3>
+
+@if (category is not null)
+{
+    <AddOrEditCategories Category="category"
+                         OnValidSubmit="OnAddCategory"
+                         OnCancel="OnClickCancel" />
+}
+
+
+@if (!string.IsNullOrWhiteSpace(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
 
 @code {
-    [Parameter] public int CategoryId { get; set; }
+    [Parameter] 
+    public int CategoryId { get; set; }
+
+    private Category? category;
+    private string? errorMessage;
+    private bool isLoading = true;
+    protected async override Task OnInitializedAsync()
+    {
+        try
+        {
+            category = await ViewCategoryByIdUseCase.ExecuteAsync(CategoryId);
+            if (category == null) 
+            { 
+                isLoading = false; 
+                return; 
+            }
+
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Ошибка загрузки: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+        
+    }
+
+    private async Task OnAddCategory()
+    {
+        if (this.category is null) return;
+
+        try
+        {
+            await EditeCategoryUseCase.ExecuteAsync(this.category);
+            navigationManager.NavigateTo("/category");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = ex.Message;
+        }
+
+    }
+
+    private void OnClickCancel()
+    {
+        navigationManager.NavigateTo("/category");
+    }
 }

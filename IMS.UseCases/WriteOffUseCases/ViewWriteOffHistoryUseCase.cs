@@ -1,11 +1,11 @@
 ﻿using IMS.CoreBusiness.Entities;
+using IMS.UseCases.Interfaces.WriteOffInterfaces;
 using IMS.UseCases.PluginInterfaces;
-using IMS.UseCases.WriteOffUseCases;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace IMS.UseCases.Interfaces.WriteOffInterfaces
+namespace IMS.UseCases.WriteOffUseCases
 {
     public class ViewWriteOffHistoryUseCase : IViewWriteOffHistoryUseCase
     {

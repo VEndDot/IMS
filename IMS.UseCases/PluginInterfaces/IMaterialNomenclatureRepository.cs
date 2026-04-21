@@ -10,5 +10,10 @@ namespace IMS.UseCases.PluginInterfaces
         Task AddMaterialNomenclatureAsync(MaterialNomenclature materialNomenclature);
         Task<IEnumerable<MaterialNomenclature>> GetMaterialNomenclature(string searchTerm = "");
 
+        Task<MaterialNomenclature?> GetMaterialNomenclatureById(int materialId);
+
+        Task UpdateMaterialNomeclatureAsync(MaterialNomenclature material);
+
+        Task DeleteMaterialAsync(int materialId);
     }
 }

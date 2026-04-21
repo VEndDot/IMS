@@ -11,8 +11,13 @@ namespace IMS.UseCases.PluginInterfaces
 
         Task<IEnumerable<Subcategory>> GetSubcategoryByNameAsync(string name);
 
+        Task DeleteSubcategoryAsync(int subcategoryId);
+
         Task<Subcategory?> GetSubcategoryByIdAsync(int subcategoryId);
 
         Task<IEnumerable<Subcategory>> GetSubcategoryByIdCategoryAsync(int categoryId);
+
+        Task UpdateSubcategoryAsync(Subcategory subcategory);
+
     }
 }
