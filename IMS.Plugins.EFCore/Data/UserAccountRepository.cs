@@ -1,4 +1,5 @@
 ﻿using IMS.CoreBusiness.Entities;
+using IMS.CoreBusiness.Services;
 using IMS.UseCases.PluginInterfaces;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -55,6 +56,24 @@ namespace IMS.Plugins.EFCore.Data
                 await this.db.SaveChangesAsync();
             }
                 
+        }
+
+        public async Task UpdateUserAccountPasswordAsync(UserAccount userAccount)
+        {
+            var user = await this.db.UserAccounts.FindAsync(userAccount.Id);
+            if (user is not null)
+            {
+                user.FirstName = userAccount.FirstName;
+                user.Role = userAccount.Role;
+
+                if (!string.IsNullOrWhiteSpace(userAccount.Password))
+                {
+                    //user.Password = userAccount.Password;
+                    user.Password = PasswordHasher.Hash(userAccount.Password);
+                }
+
+                await this.db.SaveChangesAsync();
+            }
         }
     }
 }

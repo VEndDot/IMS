@@ -12,6 +12,8 @@ namespace IMS.UseCases.PluginInterfaces
 
         Task UpdateUserAccountAsync(UserAccount userAccount);
 
+        Task UpdateUserAccountPasswordAsync(UserAccount userAccount);
+
         Task RemoveUserAccountAsync(int userId);
     }
 }

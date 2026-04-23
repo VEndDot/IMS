@@ -12,7 +12,7 @@
         <EditForm Model="@Model" OnValidSubmit="Authenticate" FormName="LoginForm">
             <DataAnnotationsValidator></DataAnnotationsValidator>
             <div class="mb-3 text-center flex-column">
-                <img src="/WorkingCat.png" style="max-height:20rem; border-radius: 50%" />
+                <img src="/loginVL.png" style="max-height:20rem; border-radius: 50%" />
                 <h3>Авторизация</h3>
             </div>
             <div class="mb-3">
@@ -50,11 +50,42 @@
         var userAccount = IMSContext.UserAccounts.Where(x => x.FirstName == Model.UserName).FirstOrDefault();
 
         // Если пользователя не существует или пароли не совпадают|СООБЩАЕМ!
-        if (userAccount is null || userAccount.Password != Model.Password)
+        // if (userAccount is null || userAccount.Password != Model.Password)
+        // {
+        //     errorMessage = "Неверное имя пользователя или пароль";
+        //     return;
+        // }
+
+        if (userAccount is null)
         {
             errorMessage = "Неверное имя пользователя или пароль";
             return;
         }
+
+        bool isCorrect = false;
+
+        if (PasswordHasher.IsHashed(userAccount.Password))
+        {
+            isCorrect = PasswordHasher.Verify(Model.Password, userAccount.Password);
+        }
+        else
+        {
+            isCorrect = userAccount.Password == Model.Password;
+
+            if (isCorrect)
+            {
+                userAccount.Password = PasswordHasher.Hash(Model.Password);
+                IMSContext.Update(userAccount);
+                await IMSContext.SaveChangesAsync();
+            }
+        }
+
+        if (!isCorrect)
+        {
+            errorMessage = "Неверное имя пользователя или пароль";
+            return;
+        }
+
 
         // список утверждений
         var claims = new List<Claim>

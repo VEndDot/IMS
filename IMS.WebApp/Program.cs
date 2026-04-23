@@ -42,6 +42,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddAuthentication();
 // 4) вводится важная служба использующая каскадные состояния авторизации (ответственна за эффективную передачу состояния аутентификации по всему приложению)
 builder.Services.AddCascadingAuthenticationState();
+
 // 5) Включаем интеграцию с базой данных в наше приложение что позволит извлекать данные пользователей
 builder.Services.AddDbContext<IMSDbContext>(options =>
 {
@@ -72,6 +73,7 @@ builder.Services.AddTransient<IAddUserAccountUseCase, AddUserAccountUseCase>();
 builder.Services.AddTransient<IViewUserAccountByIdUseCase, ViewUserAccountByIdUseCase>();
 builder.Services.AddTransient<IEditUserAccountUseCase, EditUserAccountUseCase>();
 builder.Services.AddTransient<IDeleteUserAccountUseCase, DeleteUserAccountUseCase>();
+builder.Services.AddTransient<IEditUserAccountPasswordUseCase, EditUserAccountPasswordUseCase>();
 // category services
 builder.Services.AddTransient<IViewCategoryByNameUseCase, ViewCategoryByNameUseCase>();
 builder.Services.AddTransient<IAddCategoryUseCase, AddCategoryUseCase>();
@@ -98,6 +100,7 @@ builder.Services.AddTransient<IViewMaterialNomenclatureUseCase, ViewMaterialNome
 builder.Services.AddTransient<IViewMaterialNomeclatureById, ViewMaterialNomeclatureById>();
 builder.Services.AddTransient<IEditeMaterialNomenclatureUseCase, EditeMaterialNomenclatureUseCase>();
 builder.Services.AddTransient<IDeleteMaterialNomenclatureUseCase, DeleteMaterialNomenclatureUseCase>();
+builder.Services.AddTransient<IViewMaterialNomenclatureByCurrentStock, ViewMaterialNomenclatureByCurrentStock>();
 // WriteOff services
 builder.Services.AddTransient<IAddWriteOffUseCase, AddWriteOffUseCase>();
 builder.Services.AddTransient<IViewWriteOffHistoryUseCase, ViewWriteOffHistoryUseCase>();

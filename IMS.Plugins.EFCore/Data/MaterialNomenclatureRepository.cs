@@ -91,6 +91,38 @@ namespace IMS.Plugins.EFCore.Data
                 .ToListAsync();
         }
 
+        public async Task<IEnumerable<MaterialNomenclature>> GetMaterialNomenclatureByCurrentStockAsync(string searchTerm = "")
+        {
+            var query = this.db.materialNomenclatures
+                .Include(mn => mn.Type)                          // Тип материала
+                .ThenInclude(t => t.Subcategory)                 // Подкатегория типа
+                .ThenInclude(s => s.Category)                    // Категория подкатегории
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var term = searchTerm.Trim().ToLower();
+
+                query = query.Where(mn =>
+                    // 1. Поиск по имени номенклатуры
+                    mn.Name.ToLower().Contains(term) ||
+                    // 2. Поиск по артикулу (SKU)
+                    (mn.Sku != null && mn.Sku.ToLower().Contains(term)) ||
+                    // 3. Поиск по названию типа
+                    mn.Type.Name.ToLower().Contains(term) ||
+                    // 4. Поиск по названию подкатегории
+                    (mn.Type.Subcategory.Name.ToLower().Contains(term)) ||
+                    // 5. Поиск по названию категории
+                    (mn.Type.Subcategory.Category.Name.ToLower().Contains(term))
+                );
+            }
+
+            return await query
+                .AsNoTracking()          // Оптимизация: если данные только для чтения
+                .OrderBy(mn => mn.CurrentStock)  // Сортировка для по количеству
+                .ToListAsync();
+        }
+
         public async Task<MaterialNomenclature?> GetMaterialNomenclatureById(int materialId)
         {
             return await this.db.materialNomenclatures

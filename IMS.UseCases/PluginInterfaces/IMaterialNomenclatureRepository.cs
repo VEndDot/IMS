@@ -15,5 +15,7 @@ namespace IMS.UseCases.PluginInterfaces
         Task UpdateMaterialNomeclatureAsync(MaterialNomenclature material);
 
         Task DeleteMaterialAsync(int materialId);
+
+        Task<IEnumerable<MaterialNomenclature>> GetMaterialNomenclatureByCurrentStockAsync(string searchTerm = "");
     }
 }
